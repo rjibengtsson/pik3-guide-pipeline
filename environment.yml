@@ -1,0 +1,15 @@
+# Dedicated environment for this pipeline.
+#
+#   mamba env create -f environment.yml   # or: conda env create -f environment.yml
+#   conda activate pik3-guide
+#
+# numpy is listed explicitly because Bio.SeqIO cannot be imported without it:
+# Bio/SeqIO/__init__.py pulls in TwoBitIO, which hard-requires numpy even when
+# only reading FASTA.
+name: pik3-guide
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - biopython
+  - numpy
