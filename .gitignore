@@ -223,3 +223,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# bwa index binaries (never commit these)
+*.amb
+*.ann
+*.bwt
+*.pac
+*.sa
+*.sai
+*.sam
