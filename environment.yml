@@ -7,9 +7,17 @@
 # Bio/SeqIO/__init__.py pulls in TwoBitIO, which hard-requires numpy even when
 # only reading FASTA.
 name: pik3-guide
+#
+# bwa and pysam come from bioconda; the channel order matters, so keep
+# conda-forge ahead of it.
 channels:
   - conda-forge
+  - bioconda
 dependencies:
   - python=3.12
   - biopython
   - numpy
+  # off-target mapping: bwa builds the index and aligns, pysam reads the BAM.
+  - bwa
+  - pysam
+  - pandas
