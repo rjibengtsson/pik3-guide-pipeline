@@ -52,9 +52,15 @@ sys.path.insert(0, os.path.join(_ROOT, "src"))
 import classify as classify_mod  # noqa: E402
 import tile as tile_mod  # noqa: E402
 
-DATA_DIR = os.path.join(_ROOT, "data")
-TILES_FASTA = os.path.join(_ROOT, "results", "tiles.fasta")
-CLASSIFICATION = os.path.join(_ROOT, "results", "classification.tsv")
+#: Inputs and outputs are per dataset: ``data/{DATASET}`` is tiled into
+#: ``results/{DATASET}``. This check is specific to the PI3K family -- it asserts
+#: one gene per tile over four paralogs -- so it names that dataset rather than
+#: following whatever happens to be in ``results/``. Pointing it at another
+#: dataset is these three lines plus the expectations below.
+DATA_DIR = os.path.join(_ROOT, "data", "pik3-iso")
+RESULTS_DIR = os.path.join(_ROOT, "results", "pik3")
+TILES_FASTA = os.path.join(RESULTS_DIR, "tiles.fasta")
+CLASSIFICATION = os.path.join(RESULTS_DIR, "classification.tsv")
 
 #: Tiles to check unless PIK3_BLAST_SAMPLE says otherwise. 400 keeps the test
 #: under a few seconds while still covering every transcript.
@@ -84,7 +90,7 @@ def sample_size() -> int | None:
     "run tile_transcripts.py and classify_guides.py first",
 )
 class TestBlastAgreesWithClassification(unittest.TestCase):
-    """blastn must reproduce the NM=0 hit sets in results/classification.tsv."""
+    """blastn must reproduce the NM=0 hit sets in results/pik3/classification.tsv."""
 
     @classmethod
     def setUpClass(cls):

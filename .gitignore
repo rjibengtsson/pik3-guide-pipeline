@@ -3,10 +3,11 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Generated pipeline output: reproducible by rerunning the stage commands.
+results/
 
-
-./data
-./results
+# Raw sequencing reads: too large for git.
+data/siRNA_seq/
 
 # C extensions
 *.so

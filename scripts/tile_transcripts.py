@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Tile every input sequence in a folder into fixed-length k-mers and derive guides.
 
-    python scripts/tile_transcripts.py --input-dir data --output results/tiles.tsv
+    python scripts/tile_transcripts.py --input-dir data/pik3-iso \
+        --output results/pik3/tiles.tsv
 
 Stages:
 
@@ -58,13 +59,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--input-dir",
-        default="data",
-        help="folder of input FASTA files (default: %(default)s)",
+        default="data/pik3-iso",
+        help="folder of input FASTA files (default: %(default)s). Inputs are "
+        "organised per dataset under data/; pass another folder for another set.",
     )
     parser.add_argument(
         "--output",
-        default="results/tiles.tsv",
-        help="combined TSV of all tiles (default: %(default)s)",
+        default="results/pik3/tiles.tsv",
+        help="combined TSV of all tiles (default: %(default)s). Results are "
+        "organised per dataset under results/; point this at the matching folder "
+        "when tiling another set, or the default will overwrite the PI3K run.",
     )
     parser.add_argument(
         "--input-type",
@@ -90,7 +94,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--per-transcript",
         action="store_true",
-        help="also write results/tiles/{transcript_id}.tsv for each transcript",
+        help="also write {transcript_id}.tsv per transcript, into a tiles/ folder "
+        "beside --output",
     )
     parser.add_argument(
         "--fasta-out",
