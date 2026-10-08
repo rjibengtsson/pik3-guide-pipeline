@@ -94,8 +94,13 @@ class TestGeneSymbols(unittest.TestCase):
             classify_mod.gene_symbols([self.record("NM_1.1", "a (PIK3CA) b (PIK3CB)")])
 
     def test_real_data_headers_parse(self):
-        """The actual data/ headers must yield one symbol each."""
-        data_dir = os.path.join(_ROOT, "data")
+        """The actual PI3K FASTA headers must yield one symbol each.
+
+        Inputs are per dataset -- ``data/pik3-iso`` is the four-paralog worked
+        example -- so this names that folder rather than scanning ``data/``, which
+        also holds unrelated sets whose symbols are not ALL_GENES.
+        """
+        data_dir = os.path.join(_ROOT, "data", "pik3-iso")
         records = [
             record
             for path in tile_mod.find_fasta_files(data_dir)
@@ -221,7 +226,7 @@ class TestHitsFromSam(unittest.TestCase):
         RNAME/POS/NM/XA. Trusting is_unmapped there silently drops perfect
         alignments -- including a tile's own source transcript."""
         hits = self.hits(
-            self.row("t1", 4, "NM_1.1", 213, "NM:i:0\tXA:Z:NM_1.1,+1,30M,0;NM_2.1,+5,30M,0;")
+            self.row("t1", 4, "NM_1.1", 211, "NM:i:0\tXA:Z:NM_1.1,+1,30M,0;NM_2.1,+5,30M,0;")
         )
         self.assertEqual({h.reference for h in hits}, {"NM_1.1", "NM_2.1"})
         self.assertTrue(all(h.nm == 0 for h in hits))
@@ -237,6 +242,154 @@ class TestHitsFromSam(unittest.TestCase):
     def test_malformed_xa_entry_is_an_error(self):
         with self.assertRaises(ValueError):
             self.hits(self.row("t1", 0, "NM_1.1", 1, "NM:i:0\tXA:Z:NM_2.1,+61,30M;"))
+
+    def test_positions_are_1_based_for_both_primary_and_xa(self):
+        """POS is 1-based in SAM, pysam's reference_start is not, and XA is. All
+        three must come out on the tile_id convention: 1-based inclusive."""
+        hits = self.hits(self.row("t1", 0, "NM_1.1", 7, "NM:i:0\tXA:Z:NM_2.1,+61,30M,2;"))
+        self.assertEqual(
+            sorted((h.reference, h.position) for h in hits),
+            [("NM_1.1", 7), ("NM_2.1", 61)],
+        )
+
+    def test_reverse_xa_position_keeps_its_magnitude(self):
+        hits = self.hits(self.row("t1", 0, "NM_1.1", 1, "NM:i:0\tXA:Z:NM_2.1,-61,30M,0;"))
+        reverse = [h for h in hits if h.is_reverse]
+        self.assertEqual([h.position for h in reverse], [61])
+
+    def test_alignment_running_past_the_reference_end_is_flagged(self):
+        """bwa indexes the references concatenated, so an XA entry can report an
+        alignment crossing into the next transcript while still naming the previous
+        one. Within that reference the match does not exist."""
+        hits = self.hits(
+            self.row("t1", 0, "NM_1.1", 1, "NM:i:0\tXA:Z:NM_1.1,+212,30M,0;NM_2.1,+211,30M,0;")
+        )
+        flagged = {(h.reference, h.position): h.overhangs for h in hits}
+        # LN:240, so 212 + 30 - 1 = 241 is past the end; 211 ends exactly on it.
+        self.assertTrue(flagged[("NM_1.1", 212)])
+        self.assertFalse(flagged[("NM_2.1", 211)])
+        self.assertFalse(flagged[("NM_1.1", 1)])
+
+    def test_overhanging_primary_alignment_is_flagged_too(self):
+        hits = self.hits(self.row("t1", 0, "NM_1.1", 212, "NM:i:0"))
+        self.assertEqual([h.overhangs for h in hits], [True])
+
+
+class TestReferenceSpan(unittest.TestCase):
+    """Only reference-consuming CIGAR operations count towards a hit's end."""
+
+    def test_match_only(self):
+        self.assertEqual(classify_mod.reference_span("30M"), 30)
+
+    def test_deletions_and_skips_consume_reference(self):
+        """30 reference bases from a 25 base query, so the span is not the read length."""
+        self.assertEqual(classify_mod.reference_span("10M5D15M"), 30)
+        self.assertEqual(classify_mod.reference_span("10M5N15M"), 30)
+
+    def test_insertions_and_clips_do_not(self):
+        self.assertEqual(classify_mod.reference_span("10M5I15M"), 25)
+        self.assertEqual(classify_mod.reference_span("5S25M"), 25)
+        self.assertEqual(classify_mod.reference_span("5H25M"), 25)
+
+    def test_malformed_cigar_is_an_error(self):
+        for bad in ("", "30", "M", "30Z", "30M?"):
+            with self.subTest(cigar=bad), self.assertRaises(ValueError):
+                classify_mod.reference_span(bad)
+
+
+class TestHitLoci(unittest.TestCase):
+    """Positions survive per reference, which is what hit_sets throws away."""
+
+    def test_keeps_every_position_on_the_same_reference(self):
+        hits = [
+            classify_mod.Hit("t1", "a", 0, position=5),
+            classify_mod.Hit("t1", "a", 0, position=100),
+            classify_mod.Hit("t1", "b", 0, position=7),
+        ]
+        self.assertEqual(
+            classify_mod.hit_loci(hits),
+            {"t1": {"a": [(5, 0), (100, 0)], "b": [(7, 0)]}},
+        )
+
+    def test_identical_hits_are_deduplicated(self):
+        """bwa can report the primary alignment again as an XA entry."""
+        hits = [classify_mod.Hit("t1", "a", 0, position=5)] * 3
+        self.assertEqual(classify_mod.hit_loci(hits), {"t1": {"a": [(5, 0)]}})
+
+    def test_mismatch_cutoff_matches_hit_sets(self):
+        hits = [
+            classify_mod.Hit("t1", "a", 0, position=5),
+            classify_mod.Hit("t1", "b", 3, position=9),
+        ]
+        self.assertEqual(classify_mod.hit_loci(hits, max_nm=0), {"t1": {"a": [(5, 0)]}})
+        loci = classify_mod.hit_loci(hits, max_nm=3)
+        self.assertEqual(set(loci["t1"]), set(classify_mod.hit_sets(hits, max_nm=3)[0]["t1"]))
+
+    def test_reverse_and_overhanging_hits_are_dropped(self):
+        hits = [
+            classify_mod.Hit("t1", "a", 0, position=5),
+            classify_mod.Hit("t1", "b", 0, is_reverse=True, position=9),
+            classify_mod.Hit("t1", "c", 0, position=11, overhangs=True),
+        ]
+        self.assertEqual(classify_mod.hit_loci(hits), {"t1": {"a": [(5, 0)]}})
+
+    def test_negative_cutoff_rejected(self):
+        with self.assertRaises(ValueError):
+            classify_mod.hit_loci([], max_nm=-1)
+
+
+class TestFormatLoci(unittest.TestCase):
+    def test_renders_accession_coordinates_and_nm(self):
+        self.assertEqual(
+            classify_mod.format_loci({"NM_1.1": [(2724, 0)]}, 30),
+            "NM_1.1:2724-2753(0)",
+        )
+
+    def test_semicolon_between_references_comma_within_one(self):
+        rendered = classify_mod.format_loci(
+            {"NM_2.1": [(5, 3)], "NM_1.1": [(1, 0), (61, 2)]}, 30
+        )
+        self.assertEqual(rendered, "NM_1.1:1-30(0),NM_1.1:61-90(2);NM_2.1:5-34(3)")
+
+    def test_no_hits_is_empty(self):
+        self.assertEqual(classify_mod.format_loci({}, 30), "")
+
+    def test_coordinates_are_1_based_inclusive_like_tile_ids(self):
+        """A locus string must be readable as a coordinate on the reference, so a
+        tile taken from position 1 of its own transcript renders as its own id."""
+        self.assertEqual(
+            classify_mod.format_loci({"NM_1.1": [(1, 0)]}, 30), "NM_1.1:1-30(0)"
+        )
+
+
+class TestExactLocusOracle(unittest.TestCase):
+    """The position-aware oracle, independent of the aligner like its sibling."""
+
+    def test_finds_every_occurrence_including_overlapping_ones(self):
+        found = classify_mod.exact_hit_loci({"t": "AA"}, {"a": "AAAA"})
+        self.assertEqual(found["t"], {"a": [1, 2, 3]})
+
+    def test_positions_are_1_based(self):
+        found = classify_mod.exact_hit_loci({"t": "CCCC"}, {"a": "AAAACCCCGGGG"})
+        self.assertEqual(found["t"], {"a": [5]})
+
+    def test_reports_each_reference_separately(self):
+        found = classify_mod.exact_hit_loci(
+            {"t": "CCCC"}, {"a": "AAAACCCC", "b": "CCCCTT", "c": "GGGG"}
+        )
+        self.assertEqual(found["t"], {"a": [5], "b": [1]})
+
+    def test_is_case_insensitive(self):
+        found = classify_mod.exact_hit_loci({"t": "acgt"}, {"a": "TTACGTTT"})
+        self.assertEqual(found["t"], {"a": [3]})
+
+    def test_agrees_with_the_set_oracle_on_which_references_hit(self):
+        references = {"a": "AAAACCCCGGGG", "b": "TTTTCCCCTTTT", "c": "GGGGGGGG"}
+        tiles = {"t_cccc": "CCCC", "t_gggg": "GGGG", "t_none": "ACGTACGT"}
+        loci = classify_mod.exact_hit_loci(tiles, references)
+        sets = classify_mod.exact_hit_sets(tiles, references)
+        for tile_id in tiles:
+            self.assertEqual(frozenset(loci[tile_id]), sets[tile_id])
 
 
 class TestExactOracle(unittest.TestCase):
@@ -426,6 +579,64 @@ class TestCli(unittest.TestCase):
             permissive = set(filter(None, row["hit_genes_nm"].split(";")))
             self.assertTrue(exact <= permissive, row["tile_id"])
 
+    def test_locus_columns_name_the_same_references_as_the_gene_columns(self):
+        """The two views of a hit set must not diverge: every accession in
+        hit_locs_* must map back to a symbol in hit_genes_*, and vice versa."""
+        rows = self.classify("--max-mismatches", "3")
+        genes = {
+            transcript_id: gene for transcript_id, (gene, _seq) in TRANSCRIPTS.items()
+        }
+        for row in rows:
+            for locus_column, gene_column in (
+                ("hit_locs_exact", "hit_genes_exact"),
+                ("hit_locs_nm", "hit_genes_nm"),
+            ):
+                accessions = {
+                    locus.rsplit(":", 1)[0]
+                    for group in filter(None, row[locus_column].split(";"))
+                    for locus in group.split(",")
+                }
+                self.assertEqual(
+                    {genes[accession] for accession in accessions},
+                    set(filter(None, row[gene_column].split(";"))),
+                    f"{row['tile_id']} {locus_column}",
+                )
+
+    def test_every_tile_locus_includes_where_it_was_cut_from(self):
+        """A tile's own coordinates must appear among its NM=0 loci -- the locus-level
+        form of the self-hit invariant, and what pins the 1-based convention end to
+        end: the tile_id itself is a reference coordinate."""
+        for row in self.classify():
+            self.assertIn(
+                f"{row['tile_id']}(0)",
+                row["hit_locs_exact"],
+                row["tile_id"],
+            )
+
+    def test_locus_coordinates_round_trip_to_the_tile_sequence(self):
+        """Slice the reference at each reported NM=0 locus and get the tile back."""
+        tiles = {}
+        with open(self.tiles_fasta, "r", encoding="utf-8") as handle:
+            for line in handle:
+                if line.startswith(">"):
+                    current = line[1:].strip()
+                else:
+                    tiles[current] = line.strip()
+        sequences = {
+            transcript_id: sequence for transcript_id, (_gene, sequence) in TRANSCRIPTS.items()
+        }
+        for row in self.classify():
+            for group in filter(None, row["hit_locs_exact"].split(";")):
+                for locus in group.split(","):
+                    accession, span = locus.rsplit(":", 1)
+                    coordinates, _, _nm = span.partition("(")
+                    start, end = (int(value) for value in coordinates.split("-"))
+                    self.assertEqual(
+                        sequences[accession][start - 1 : end],
+                        tiles[row["tile_id"]],
+                        locus,
+                    )
+
     def test_summary_flags_the_permissive_columns_as_unvalidated(self):
         self.classify("--max-mismatches", "3")
         self.assertIn("NOT validated", self.summary)
@@ -435,6 +646,63 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit) as caught:
             self.classify(tiles=self.guides_fasta)
         self.assertIn("looks like guides.fasta", str(caught.exception))
+
+    def kept_work_dir(self, summary: str) -> str:
+        marker = "kept intermediates in "
+        line = next((l for l in summary.splitlines() if l.startswith(marker)), None)
+        self.assertIsNotNone(line, f"summary did not report a kept work dir:\n{summary}")
+        return line[len(marker):].strip()
+
+    def test_default_run_discards_intermediates(self):
+        self.classify("--max-mismatches", "0")
+        self.assertIn("intermediates discarded", self.summary)
+        self.assertNotIn("kept intermediates in", self.summary)
+
+    def test_keep_temp_leaves_the_intermediates_to_inspect(self):
+        self.classify("--max-mismatches", "0", "--keep-temp")
+        work_dir = self.kept_work_dir(self.summary)
+        self.addCleanup(shutil.rmtree, work_dir, True)
+        for name in (
+            "transcriptome.fasta",
+            "transcriptome.fasta.bwt",
+            "transcriptome.fasta.sa",
+            "tiles.sai",
+            "tiles.sam",
+            "hits.tsv",
+        ):
+            self.assertTrue(os.path.isfile(os.path.join(work_dir, name)), name)
+
+    def test_explicit_work_dir_is_kept_without_keep_temp(self):
+        work_dir = os.path.join(self.tmp.name, "work")
+        self.classify("--max-mismatches", "0", "--work-dir", work_dir)
+        self.assertEqual(self.kept_work_dir(self.summary), work_dir)
+        self.assertTrue(os.path.isfile(os.path.join(work_dir, "tiles.sam")))
+
+    def test_dumped_hits_explain_the_hit_sets(self):
+        """hits.tsv is pre-dedup, so it must account for every counted hit."""
+        rows = self.classify("--max-mismatches", "3", "--keep-temp")
+        work_dir = self.kept_work_dir(self.summary)
+        self.addCleanup(shutil.rmtree, work_dir, True)
+        with open(os.path.join(work_dir, "hits.tsv"), newline="", encoding="utf-8") as handle:
+            hits = list(csv.DictReader(handle, delimiter="\t"))
+
+        self.assertTrue(hits)
+        # Reverse-strand hits must be visible but never counted.
+        for hit in hits:
+            if hit["strand"] == "-":
+                self.assertEqual((hit["counted_exact"], hit["counted_nm"]), ("0", "0"))
+            if int(hit["nm"]) > 0:
+                self.assertEqual(hit["counted_exact"], "0")
+
+        # Collapsing the dump by reference must reproduce the exact hit sets.
+        genes = {tid: gene for tid, (gene, _) in TRANSCRIPTS.items()}
+        collapsed: dict[str, set[str]] = {}
+        for hit in hits:
+            if hit["counted_exact"] == "1":
+                collapsed.setdefault(hit["tile_id"], set()).add(genes[hit["reference"]])
+        for row in rows:
+            expected = set(filter(None, row["hit_genes_exact"].split(";")))
+            self.assertEqual(collapsed.get(row["tile_id"], set()), expected, row["tile_id"])
 
     def test_mismatched_reference_is_rejected(self):
         other_dir = os.path.join(self.tmp.name, "other")
