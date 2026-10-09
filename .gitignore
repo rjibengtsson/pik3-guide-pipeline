@@ -9,6 +9,9 @@ results/
 # Raw sequencing reads: too large for git.
 data/siRNA_seq/
 
+
+tmp/
+
 # C extensions
 *.so
 

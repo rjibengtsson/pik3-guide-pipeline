@@ -21,3 +21,5 @@ dependencies:
   - bwa
   - pysam
   - pandas
+  # src/visualize.py builds the interactive guide-position plots.
+  - plotly

@@ -4,8 +4,9 @@ Pipeline for designing CRISPR-Cas13 guide RNAs that target a single gene isoform
 defined subset, or all members of a gene family. The worked example is the class IA/IB
 PI3K catalytic subunits (PIK3CA/B/D/G).
 
-Stages 1 (tiling + guide generation) and 2 (family classification) exist. Remaining
-stages — GC/MFE filtering, genome-wide off-target mapping — are not written yet.
+Stages 1 (tiling + guide generation) and 2 (family classification) exist, plus a
+visualization stage that plots filtered guides along a transcript. Remaining stages —
+GC/MFE filtering, genome-wide off-target mapping — are not written yet.
 
 Inputs and outputs are organised **per dataset**: `data/{dataset}/` is tiled into
 `results/{dataset}/`. `pik3-iso`/`pik3` is the worked example (the four PI3K
@@ -21,13 +22,18 @@ Everything must run inside the project conda env; see **Environment** below for 
 mamba env create -f environment.yml   # or: conda env create -f environment.yml
 conda activate pik3-guide
 
-# tests (116, all passing; needs bwa and blastn, else some skip)
+# tests (196, all passing; needs bwa and blastn, else some skip)
 python -m unittest discover -s test -v
 
 # stage 1, exactly as the committed results/pik3/ were produced
 python scripts/tile_transcripts.py --input-dir data/pik3-iso \
     --output results/pik3/tiles.tsv --input-type mrna -k 30 --step 1 \
     --per-transcript --fasta-out results/pik3/guides.fasta
+
+# visualization, one transcript per plot
+python scripts/plot_guides.py --fasta data/ppib/NM_000942.5.fasta \
+    --predictions results/ppib/ppib-predictions.csv \
+    --min-efficacy 0.95 --output results/ppib/guides.html
 ```
 
 ## Layout
@@ -361,3 +367,205 @@ genes*, one RefSeq variant each, so this measures within-family cross-reactivity
 "PIK3CA-specific" means specific among these four sequences — not genome-wide, and not
 isoform-level within a gene unless the other transcript variants are added to the
 reference.
+
+## Visualization — where the surviving guides sit on a transcript
+
+Plots filtered guides along the full length of one transcript, as interactive HTML.
+
+- [src/visualize.py](src/visualize.py) — pure logic plus figure construction. No
+  function takes a DataFrame: rows come in as mappings, which is what both
+  `DataFrame.to_dict("records")` and `csv.DictReader` already produce, so pandas is
+  not a dependency of this stage and the layout logic is testable without it.
+- [scripts/plot_guides.py](scripts/plot_guides.py) — CLI: reads the FASTA and the
+  predictions CSV, filters, writes the HTML and the stderr summary.
+- [test/test_visualize.py](test/test_visualize.py) — unittest, 80 cases. Needs
+  plotly and pandas, so nothing skips.
+
+```bash
+python scripts/plot_guides.py --fasta data/pik3-iso/NM_005026.5.fasta \
+--predictions results/pik3/pik3-predictions.csv --min-efficacy 0.95 \
+--classification results/pik3/classification.tsv \
+--output results/plots/NM_005026.5_pik3cd_guides.html
+```
+
+`--fasta` takes the **single** transcript to plot and both the accession and the
+length come off that record via Biopython. A multi-record FASTA is a hard error
+rather than "use the first": the whole plot is measured against that one length, so
+picking a record would risk drawing guides against the wrong ruler.
+
+**One plot is one transcript.** The accession from the FASTA is matched against the
+`transcript_id` column, which is how a multi-transcript predictions file
+(`results/pik3/pik3-predictions.csv` holds all four paralogs) is reduced to one
+plot. Loop over the FASTAs in a dataset to get a plot per transcript.
+
+### This stage filters nothing
+
+`src/visualize.py` has no notion of a threshold, a score or a class — the caller
+decides which guides are worth plotting and the module draws what it is handed.
+That keeps the plot honest about being a view of one particular cut-off, and keeps
+the cut-off's rules out of the plotting code. `--min-efficacy` lives in the CLI and
+is **required**, with no default: the threshold is the whole content of the plot, and
+a silent default would make two runs incomparable. The filter is `>=`, inclusive.
+
+The input CSV is a predictions file carrying a `predicted_efficacy` column
+(`results/{dataset}/{dataset}-predictions.csv`). That file is produced outside this
+repo; `tile_id`, `transcript_id`, `start`, `end` and `predicted_efficacy` are the
+columns required, checked up front with the columns actually found listed on failure.
+
+### The hover box carries the guide sequence
+
+Hovering a guide gives its `tile_id`, span, length, efficacy, optional label, any
+stage 2 annotation (see below) and the **spacer sequence**, written `5'-...-3'` in
+monospace, so a guide can be read
+off the plot and ordered without going back to the CSV. The ends are marked
+because every sequence in this pipeline is 5' -> 3' (see `src/tile.py`) and a bare
+30-mer in a tooltip gives the reader no way to confirm that.
+
+The column is auto-detected as the first of `spacer_seq` (a predictions file) or
+`guide_rna` (a stage-1 tiles file) that is present; `--sequence-column` overrides,
+and `--sequence-column none` leaves it out. **`target_seq` is deliberately not in
+that list** — it is the target, not the guide, and showing it in a box labelled
+"guide" would be wrong by exactly one reverse-complement.
+`test_the_guide_is_shown_not_the_target` pins it with a fixture carrying both
+columns. An explicitly named column that does not exist is an error, since asking
+for a column and silently getting no sequence would be worse. A file with neither
+known column gets no sequence line and a note saying so.
+
+`src/visualize.py` itself does **not** default `sequence_column`: guessing there
+would put the target in a guide box with nothing to catch it. The default lives in
+the CLI, where the file's columns can be inspected.
+
+### Optional stage 2 annotation in the hover box
+
+`--classification results/{dataset}/classification.tsv` is optional. Given it, each
+hover box also carries `class_nm`, `hit_genes_nm` and `hit_locs_nm`, joined on
+`tile_id`. Without it the plot is built from the predictions file alone — the flag
+adds lines to the hover box and changes nothing else.
+
+The join is a **left** join: a guide missing from the classification keeps its place
+in the plot and simply carries fewer hover lines. The plot's job is to show the
+filtered guides, and it must not drop any because a second file is incomplete; the
+summary reports how many were annotated and warns when some were not. **Zero**
+matches is a hard error, for the same reason a mismatched predictions file is —
+`tile_id` is the join key across every stage, so no overlap at all means the two
+files describe different tilings (another dataset, or another k) and every hover box
+would be silently blank. An empty guide set is exempt: nothing passing the threshold
+must not look like a wrong-file error.
+
+A predictions file carrying one of the stage 2 column names would otherwise win the
+merge — pandas suffixes the *incoming* column, leaving the stale predictions value
+under the name everything downstream reads. `join_classification` drops the
+predictions copy first, so the classification file is authoritative for its own
+columns; `test_the_classification_file_wins_a_column_name_collision` pins it, and the guard
+covers a `--label-column` carried across the join too.
+
+All three shown columns are the **NM<=3** view, deliberately: the label and the
+hits it was computed from come from the same cutoff and so cannot be mistaken for
+each other. That view is **advisory** — it rests on bwa's heuristic with no oracle
+behind it, so an absent hit means "not found", never "does not exist" — and the
+summary says so on every run.
+
+The validated exact-match label, `class_exact`, is **not** shown by default. Get both
+with `--label-column class_exact`. That check runs *after* the join and the join
+carries the named column across, so `--label-column` can name a column from either
+file; one in neither is an error naming both.
+
+`src/visualize.py` knows none of these column names. `Guide.annotations` is an
+ordered tuple of `(name, value)` pairs and `guides_from_rows` takes
+`annotation_columns`, so a later stage (GC, off-target counts) can annotate a guide
+without this module learning anything about it. The stage 2 names live in the CLI's
+`CLASSIFICATION_COLUMNS`.
+
+#### Why `;` wraps in the hover box and `,` never does
+
+Long annotation values are broken at `;` and **never** at `,`. In a locus string
+those separators mean different things — `;` divides references, `,` divides several
+loci on the *same* reference — and that is exactly the distinction between
+cross-family reactivity and a tile matching its own transcript twice. Breaking at
+`;` puts one reference per line; breaking at `,` would scatter the very thing the
+reader is meant to see. Only values longer than `_WRAP_OVER` (40) break, so a short
+gene list like `PIK3CB;PIK3CD` stays on one line. Both halves are pinned by tests.
+
+Over the real pik3 run: 14 tiles have a cross-family NM<=3 hit (`;` in
+`hit_genes_nm`) and 56 have a self-repeat (`,` in `hit_locs_nm`).
+
+### Coordinates, and why bars are drawn half a base wide of their span
+
+Positions are **1-based inclusive**, the same convention as `tile_id`, so a guide
+spans `end - start + 1` bases. Each base is drawn as a unit cell centred on its own
+coordinate: a guide renders from `start - 0.5` to `end + 0.5`. A 30-mer at `start=1`
+therefore occupies 0.5–30.5 and *abuts*, rather than overlaps, a guide starting at 31.
+Dropping the half-base makes every bar misreport its position by half a base and the
+abutting case look like an overlap; `test_bars_span_each_guide_inclusive_of_both_end_bases`
+pins it.
+
+The x axis is **always** the whole transcript, 1 to `length`, never just the range
+the guides occupy — uncovered regions have to read as genuinely uncovered, which is
+the question the plot exists to answer.
+
+`check_within_transcript` rejects a guide lying outside `1..length`. A guide off the
+end means the length and the guides came from different sequences (wrong FASTA, stale
+predictions file), which would otherwise render as a plausible-looking plot measured
+against the wrong ruler.
+
+### Lanes
+
+Filtered step-1 tiles overlap heavily — a run of consecutive high-scoring tiles is
+30 nt wide and 1 nt apart — so drawing them on one row would stack them into an
+opaque block and hide how many there are. `pack_lanes` spreads overlapping guides
+onto separate rows by greedy interval packing, and **the lane count at a position is
+a direct read-out of guide density there**; lane number carries no other meaning.
+Greedy-by-start is optimal for interval packing, which is why there is no cleverer
+algorithm here.
+
+The default `gap=1` is load-bearing for legibility, not cosmetic: without it a guide
+ending at 30 and one starting at 31 share a lane and draw as one unbroken bar.
+
+`--y-mode score` places each guide at the height of its efficacy instead, which shows
+quality and position together at the cost of overlapping bars. It requires every guide
+to carry a score and errors if any lacks one.
+
+### A threshold nothing passes is an answer, not an error
+
+The CLI writes the transcript with no guides on it and names the highest
+`predicted_efficacy` available, so the user can retry with a figure that exists. A
+*mismatched* FASTA/predictions pair is the opposite — a hard error listing the
+`transcript_id` values actually present, because an empty plot there would look
+plausible while being a wrong-dataset mistake.
+
+The stderr summary reports the kept count, the span, the percentage of the transcript
+covered and the lane count. Coverage is the number to watch: at 0.95, PPIB keeps 13
+guides covering 20.6% of its 893 nt, and PIK3CA keeps 109 covering 15.3% of 9,259 nt.
+
+Default output is `guides-{accession}-eff{threshold}.html` beside the predictions
+file, so two thresholds do not overwrite one another.
+
+`plotly.js` is linked from a CDN by default, which keeps the file ~50 kB but needs a
+network connection to open. `--inline-plotlyjs` embeds it (~3 MB, opens offline),
+which is the right choice for a file being shared or archived.
+
+### What the tests do and do not pin
+
+Nothing asserts how the plot *looks* — colours, bar widths and layout are
+presentation and will change. What is pinned is what can be silently wrong and would
+corrupt the reading of the plot: lane packing, the coordinate convention, the bounds
+check, and the CLI's accession matching and filtering. `lanes_are_non_overlapping` is
+written as a direct pairwise check rather than in terms of `pack_lanes`' own logic,
+for the same reason `pairs_antiparallel` avoids `reverse_complement` — it must fail,
+not agree, when the packer is wrong. `TestPlotlyAssumptions` pins the `go.Bar`
+`base`/`x` semantics so a Plotly upgrade fails loudly, the role
+`test_biopython_helpers_behave_as_this_module_assumes` plays for Biopython.
+
+Verified to fail on twelve deliberate mutations — dropping the half-base offset,
+ignoring the lane gap, disabling the bounds check, making the threshold exclusive,
+dropping the accession match, dropping the sequence from the hovertemplate so it
+is carried but never shown, letting the resolver reach for `target_seq`,
+dropping the annotations from the hovertemplate, breaking at `,` as well as `;`,
+using an inner join so unannotated guides vanish, letting a predictions column
+shadow the classification, and not carrying a `--label-column` across the join — so
+the suite is not passing vacuously. Two of those mutations initially passed, through
+a tuple/list mismatch and a `"pan"` assertion that matched Plotly's own `<span>`;
+both tests were rewritten until the mutation failed them.
+
+`TestRealData` runs over the committed `ppib` dataset and **skips silently** if
+`data/ppib/` or `results/ppib/ppib-predictions.csv` is absent. Check the skip count.
