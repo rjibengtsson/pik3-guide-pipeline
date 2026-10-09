@@ -11,6 +11,9 @@ classify-guides-wjhtb7_3/
 # Raw sequencing reads: too large for git.
 data/siRNA_seq/
 
+
+tmp/
+
 # C extensions
 *.so
 
