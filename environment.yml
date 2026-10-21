@@ -23,3 +23,6 @@ dependencies:
   - pandas
   # src/visualise_scatterlines.py builds the interactive plots.
   - plotly
+  # multiple sequence alignment for conserved-region selection
+  # (src/conservation.py shells out to `mafft`).
+  - mafft
