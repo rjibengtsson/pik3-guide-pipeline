@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+
+from __future__ import annotations
+
+import argparse
+import sys, os
 import subprocess
 from pathlib import Path
-
 
 
 def align_with_mafft(input_fasta: str) -> None:
@@ -24,4 +29,16 @@ def align_with_mafft(input_fasta: str) -> None:
         subprocess.run(cmd, stdout=out, check=True)
 
     return output_fasta
-    
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Identify regions of conservation in a set of sequences.")
+    parser.add_argument("-f", "--fasta", type=str, help="FASTA file containing sequences to analyze.")
+    parser.add_argument("-o", "--out_file", type=str, help="File where the downloaded sequences are written.")
+    args = parser.parse_args()
+
+    # Align the sequences using MAFFT
+    aligned_fasta = align_with_mafft(args.fasta)
+
+if __name__ == "__main__":
+    main()
