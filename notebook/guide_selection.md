@@ -158,10 +158,7 @@ every hotspot with its guide count and best guide.
 
 Since the cluster of hotspot window scan analysis revealed that clusters are fairly 
 even distributed across and gain over different windows is modest, we will go ahead 
-and select the output of run at `--min-efficacy 0.9 --merge-gap 0` as the final target 
-region.
-
-Will extend NM_006219.3 to 2kb for ease of cloning. 
+and select regions within CDS of each isoform and will select the following regions for cloning:
 
 | transcript | gene | best window | length |
 |---|---|---|---|---|---|---|
