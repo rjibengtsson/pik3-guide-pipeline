@@ -1,0 +1,575 @@
+LOCUS       NM_006218               9259 bp    mRNA    linear   PRI 06-SEP-2026
+DEFINITION  Homo sapiens phosphatidylinositol-4,5-bisphosphate 3-kinase
+            catalytic subunit alpha (PIK3CA), mRNA.
+ACCESSION   NM_006218
+VERSION     NM_006218.4
+KEYWORDS    RefSeq; MANE Select.
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 9259)
+  AUTHORS   Schaffer,L.V., Hu,M., Qian,G., Moon,K.M., Pal,A., Soni,N.,
+            Latham,A.P., Pontano Vaites,L., Tsai,D., Mattson,N.M., Licon,K.,
+            Bachelder,R., Cesnik,A., Gaur,I., Le,T., Leineweber,W., Palar,A.,
+            Pulido,E., Qin,Y., Zhao,X., Churas,C., Lenkiewicz,J., Chen,J.,
+            Ono,K., Pratt,D., Zage,P., Echeverria,I., Sali,A., Harper,J.W.,
+            Gygi,S.P., Foster,L.J., Huttlin,E.L., Lundberg,E. and Ideker,T.
+  TITLE     Multimodal cell maps as a foundation for structural and functional
+            genomics
+  JOURNAL   Nature 642 (8066), 222-231 (2025)
+   PUBMED   40205054
+  REMARK    Erratum:[Nature. 2025 Oct;646(8086):E16. doi:
+            10.1038/s41586-025-09648-x. PMID: 41039152]
+REFERENCE   2  (bases 1 to 9259)
+  AUTHORS   Czyzyk,D., Yan,W., Messing,S., Gillette,W., Tsuji,T., Yamaguchi,M.,
+            Furuzono,S., Turner,D.M., Esposito,D., Nissley,D.V., McCormick,F.
+            and Simanshu,D.K.
+  TITLE     Structural insights into isoform-specific RAS-PI3Kalpha
+            interactions and the role of RAS in PI3Kalpha activation
+  JOURNAL   Nat Commun 16 (1), 525 (2025)
+   PUBMED   39788953
+REFERENCE   3  (bases 1 to 9259)
+  AUTHORS   Wedemeyer,M.A., Ding,T., Garfinkle,E.A.R., Westfall,J.J.,
+            Navarro,J.B., Hernandez Gonzalez,M.E., Varga,E.A., Witman,P.,
+            Mardis,E.R., Cottrell,C.E., Miller,A.R. and Miller,K.E.
+  TITLE     Defining the transcriptome of PIK3CA-altered cells in a human
+            capillary malformation using single cell long-read sequencing
+  JOURNAL   Sci Rep 14 (1), 25440 (2024)
+   PUBMED   39455600
+  REMARK    GeneRIF: Defining the transcriptome of PIK3CA-altered cells in a
+            human capillary malformation using single cell long-read
+            sequencing.
+REFERENCE   4  (bases 1 to 9259)
+  AUTHORS   Vida-Navas,E., Barca-Tierno,V., Lopez-Gomez,V., Salazar,M.T.,
+            Moreno-Pelayo,M.A. and Guillen-Ponce,C.
+  TITLE     Constitutional Mutation of PIK3CA: A Variant of Cowden Syndrome?
+  JOURNAL   Genes (Basel) 15 (9), 1209 (2024)
+   PUBMED   39336800
+  REMARK    GeneRIF: Constitutional Mutation of PIK3CA: A Variant of Cowden
+            Syndrome?
+REFERENCE   5  (bases 1 to 9259)
+  AUTHORS   Voutsadakis,I.A.
+  TITLE     PIK3CA Mutated Colorectal Cancers Without KRAS, NRAS and BRAF
+            Mutations Possess Common and Potentially Targetable Mutations in
+            Epigenetic Modifiers and DNA Damage Response Genes
+  JOURNAL   Cancer Genomics Proteomics 21 (5), 533-548 (2024)
+   PUBMED   39191495
+  REMARK    GeneRIF: PIK3CA Mutated Colorectal Cancers Without KRAS, NRAS and
+            BRAF Mutations Possess Common and Potentially Targetable Mutations
+            in Epigenetic Modifiers and DNA Damage Response Genes.
+REFERENCE   6  (bases 1 to 9259)
+  AUTHORS   Volinia,S., Hiles,I., Ormondroyd,E., Nizetic,D., Antonacci,R.,
+            Rocchi,M. and Waterfield,M.D.
+  TITLE     Molecular cloning, cDNA sequence, and chromosomal localization of
+            the human phosphatidylinositol 3-kinase p110 alpha (PIK3CA) gene
+  JOURNAL   Genomics 24 (3), 472-477 (1994)
+   PUBMED   7713498
+REFERENCE   7  (bases 1 to 9259)
+  AUTHORS   Kodaki,T., Woscholski,R., Hallberg,B., Rodriguez-Viciana,P.,
+            Downward,J. and Parker,P.J.
+  TITLE     The activation of phosphatidylinositol 3-kinase by Ras
+  JOURNAL   Curr Biol 4 (9), 798-806 (1994)
+   PUBMED   7820549
+REFERENCE   8  (bases 1 to 9259)
+  AUTHORS   Mirzaa,G., Graham,J.M. Jr. and Keppler-Noreuil,K.
+  TITLE     PIK3CA-Related Overgrowth Spectrum
+  JOURNAL   (in) Adam MP, Bick S, Mirzaa GM, Wallace SE and Amemiya A (Eds.);
+            GENEREVIEWS(R);
+            (1993)
+   PUBMED   23946963
+REFERENCE   9  (bases 1 to 9259)
+  AUTHORS   Hiles,I.D., Otsu,M., Volinia,S., Fry,M.J., Gout,I., Dhand,R.,
+            Panayotou,G., Ruiz-Larrea,F., Thompson,A., Totty,N.F. et al.
+  TITLE     Phosphatidylinositol 3-kinase: structure and expression of the 110
+            kd catalytic subunit
+  JOURNAL   Cell 70 (3), 419-429 (1992)
+   PUBMED   1322797
+REFERENCE   10 (bases 1 to 9259)
+  AUTHORS   Carpenter,C.L., Duckworth,B.C., Auger,K.R., Cohen,B.,
+            Schaffhausen,B.S. and Cantley,L.C.
+  TITLE     Purification and characterization of phosphoinositide 3-kinase from
+            rat liver
+  JOURNAL   J Biol Chem 265 (32), 19704-19711 (1990)
+   PUBMED   2174051
+  REMARK    GeneRIF: This paper reports the first purification of a
+            phosphoinositide 3-kinase and shows that the protein is a
+            heterodimer of an 85 kd regulatory subunit that mediates binding to
+            phosphorylated proteins and a 110 kd catalytic subunit.
+COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
+            reference sequence was derived from AC076966.25, BX484734.1,
+            U79143.1, BX473473.1, AU129890.2, BQ228953.1, BX437219.2,
+            AW445128.1 and AI379480.1.
+            
+            On Nov 23, 2018 this sequence version replaced NM_006218.3.
+            
+            Summary: Phosphatidylinositol 3-kinase is composed of an 85 kDa
+            regulatory subunit and a 110 kDa catalytic subunit. The protein
+            encoded by this gene represents the catalytic subunit, which uses
+            ATP to phosphorylate PtdIns, PtdIns4P and PtdIns(4,5)P2. This gene
+            has been found to be oncogenic and has been implicated in cervical
+            cancers. A pseudogene of this gene has been defined on chromosome
+            22. [provided by RefSeq, Apr 2016].
+            
+            Sequence Note: This RefSeq record was created from transcript and
+            genomic sequence data to make the sequence consistent with the
+            reference genome assembly. The genomic coordinates used for the
+            transcript record were based on transcript alignments.
+            
+            Publication Note:  This RefSeq record includes a subset of the
+            publications that are available for this gene. Please see the Gene
+            record to access additional publications.
+            
+            ##Evidence-Data-START##
+            Transcript exon combination :: SRR1660805.126191.1,
+                                           SRR1803615.87702.1 [ECO:0000332]
+            RNAseq introns              :: single sample supports all introns
+                                           SAMEA1965299, SAMEA1966682
+                                           [ECO:0000348]
+            ##Evidence-Data-END##
+            
+            ##RefSeq-Attributes-START##
+            MANE Ensembl match     :: ENST00000263967.4/ ENSP00000263967.3
+            RefSeq Select criteria :: based on conservation, expression,
+                                      longest protein
+            ##RefSeq-Attributes-END##
+            COMPLETENESS: full length.
+PRIMARY     REFSEQ_SPAN         PRIMARY_IDENTIFIER PRIMARY_SPAN        COMP
+            1-166               AC076966.25        35734-35899
+            167-471             BX484734.1         2-306
+            472-544             U79143.1           149-221
+            545-787             BX473473.1         143-385
+            788-1201            U79143.1           465-878
+            1202-1591           AU129890.2         118-507
+            1592-2185           BQ228953.1         80-673
+            2186-3103           U79143.1           1863-2780
+            3104-3846           BX437219.2         11-753              c
+            3847-3878           AW445128.1         13-44               c
+            3879-8878           AC076966.25        122090-127089
+            8879-9097           AI379480.1         174-392             c
+            9098-9140           AC076966.25        127309-127351
+            9141-9259           AI379480.1         12-130              c
+FEATURES             Location/Qualifiers
+     source          1..9259
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /chromosome="3"
+                     /map="3q26.32"
+     gene            1..9259
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="phosphatidylinositol-4,5-bisphosphate 3-kinase
+                     catalytic subunit alpha"
+                     /db_xref="GeneID:5290"
+                     /db_xref="HGNC:HGNC:8975"
+                     /db_xref="MIM:171834"
+     exon            1..247
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            248..675
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     misc_feature    300..302
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="upstream in-frame stop codon"
+     CDS             324..3530
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /EC_number="2.7.1.137"
+                     /EC_number="2.7.11.1"
+                     /EC_number="2.7.1.153"
+                     /note="phosphatidylinositol 3-kinase, catalytic, alpha
+                     polypeptide; phosphoinositide 3-kinase alpha;
+                     phosphatidylinositol 3-kinase, catalytic, 110-KD, alpha;
+                     phosphoinositide-3-kinase, catalytic, alpha polypeptide;
+                     PI3-kinase p110 subunit alpha; ptdIns-3-kinase subunit
+                     p110-alpha; phosphatidylinositol-4,5-bisphosphate 3-kinase
+                     110 kDa catalytic subunit alpha; serine/threonine protein
+                     kinase PIK3CA; mutant
+                     phosphatidylinositol-4,5-bisphosphate 3-kinase catalytic
+                     subunit alpha"
+                     /codon_start=1
+                     /product="phosphatidylinositol 4,5-bisphosphate 3-kinase
+                     catalytic subunit alpha isoform"
+                     /protein_id="NP_006209.2"
+                     /db_xref="CCDS:CCDS43171.1"
+                     /db_xref="GeneID:5290"
+                     /db_xref="HGNC:HGNC:8975"
+                     /db_xref="MIM:171834"
+                     /translation="MPPRPSSGELWGIHLMPPRILVECLLPNGMIVTLECLREATLIT
+                     IKHELFKEARKYPLHQLLQDESSYIFVSVTQEAEREEFFDETRRLCDLRLFQPFLKVI
+                     EPVGNREEKILNREIGFAIGMPVCEFDMVKDPEVQDFRRNILNVCKEAVDLRDLNSPH
+                     SRAMYVYPPNVESSPELPKHIYNKLDKGQIIVVIWVIVSPNNDKQKYTLKINHDCVPE
+                     QVIAEAIRKKTRSMLLSSEQLKLCVLEYQGKYILKVCGCDEYFLEKYPLSQYKYIRSC
+                     IMLGRMPNLMLMAKESLYSQLPMDCFTMPSYSRRISTATPYMNGETSTKSLWVINSAL
+                     RIKILCATYVNVNIRDIDKIYVRTGIYHGGEPLCDNVNTQRVPCSNPRWNEWLNYDIY
+                     IPDLPRAARLCLSICSVKGRKGAKEEHCPLAWGNINLFDYTDTLVSGKMALNLWPVPH
+                     GLEDLLNPIGVTGSNPNKETPCLELEFDWFSSVVKFPDMSVIEEHANWSVSREAGFSY
+                     SHAGLSNRLARDNELRENDKEQLKAISTRDPLSEITEQEKDFLWSHRHYCVTIPEILP
+                     KLLLSVKWNSRDEVAQMYCLVKDWPPIKPEQAMELLDCNYPDPMVRGFAVRCLEKYLT
+                     DDKLSQYLIQLVQVLKYEQYLDNLLVRFLLKKALTNQRIGHFFFWHLKSEMHNKTVSQ
+                     RFGLLLESYCRACGMYLKHLNRQVEAMEKLINLTDILKQEKKDETQKVQMKFLVEQMR
+                     RPDFMDALQGFLSPLNPAHQLGNLRLEECRIMSSAKRPLWLNWENPDIMSELLFQNNE
+                     IIFKNGDDLRQDMLTLQIIRIMENIWQNQGLDLRMLPYGCLSIGDCVGLIEVVRNSHT
+                     IMQIQCKGGLKGALQFNSHTLHQWLKDKNKGEIYDAAIDLFTRSCAGYCVATFILGIG
+                     DRHNSNIMVKDDGQLFHIDFGHFLDHKKKKFGYKRERVPFVLTQDFLIVISKGAQECT
+                     KTREFERFQEMCYKAYLAIRQHANLFINLFSMMLGSGMPELQSFDDIAYIRKTLALDK
+                     TEQEALEYFMKQMNDAHHGGWTTKMDWIFHTIKQHALN"
+     misc_feature    2634..2654
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="propagated from UniProtKB/Swiss-Prot (P42336.2);
+                     Region: G-loop.
+                     /evidence=ECO:0000255|PROSITE-ProRule:PRU00269"
+     misc_feature    2649..2651
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="Implicated in the recognition of ATP as well as
+                     PIP2. Also crucial for autophosphorylation of the p85alpha
+                     subunit. /evidence=ECO:0000305|PubMed:23936502; propagated
+                     from UniProtKB/Swiss-Prot (P42336.2); other site"
+     misc_feature    3057..3083
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="propagated from UniProtKB/Swiss-Prot (P42336.2);
+                     Region: Catalytic loop.
+                     /evidence=ECO:0000255|PROSITE-ProRule:PRU00269"
+     misc_feature    3114..3194
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="propagated from UniProtKB/Swiss-Prot (P42336.2);
+                     Region: Activation loop.
+                     /evidence=ECO:0000255|PROSITE-ProRule:PRU00269"
+     exon            676..885
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            886..1136
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1137..1382
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1383..1468
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1469..1574
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1575..1727
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1728..1862
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1863..1987
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1988..2069
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2070..2234
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2235..2338
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2339..2510
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2511..2617
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2618..2739
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2740..2818
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2819..2989
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2990..3107
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            3108..3259
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     exon            3260..9259
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /inference="alignment:Splign:2.1.0"
+     regulatory      3980..3985
+                     /regulatory_class="polyA_signal_sequence"
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="hexamer: ATTACA"
+     polyA_site      4000
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="major polyA site"
+     regulatory      4131..4136
+                     /regulatory_class="polyA_signal_sequence"
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="hexamer: AATAAA"
+     polyA_site      4152
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="major polyA site"
+     regulatory      4466..4471
+                     /regulatory_class="polyA_signal_sequence"
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="hexamer: ATTAAA"
+     polyA_site      4491
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+     polyA_site      6659
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+     regulatory      7501..7506
+                     /regulatory_class="polyA_signal_sequence"
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="hexamer: ATTAAA"
+     polyA_site      7519
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+     regulatory      8542..8547
+                     /regulatory_class="polyA_signal_sequence"
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="hexamer: AATATA"
+     polyA_site      8563
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+     regulatory      9237..9242
+                     /regulatory_class="polyA_signal_sequence"
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+                     /note="hexamer: ATTAAA"
+     polyA_site      9259
+                     /gene="PIK3CA"
+                     /gene_synonym="CCM4; CLAPO; CLOVE; CWS5; HMH; MCAP; MCM;
+                     MCMTC; p110-alpha; PI3K; PI3K-alpha"
+ORIGIN      
+        1 agttccggtg ccgccgctgc ggccgctgag gtgtcgggct gctgctgccg cggccgctgg
+       61 gactggggct ggggccgccg gcgaggcagg gctcgggccc ggccgggcag ctccggagcg
+      121 gcgggggaga ggggccggga ggcgggggcc gtgccgcccg ctctcctctc cctcggcgcc
+      181 gccgccgccg cccgcggggc tgggacccga tgcggttaga gccgcggagc ctggaagagc
+      241 cccgagcgtt tctgctttgg gacaaccata catctaattc cttaaagtag ttttatatgt
+      301 aaaacttgca aagaatcaga acaatgcctc cacgaccatc atcaggtgaa ctgtggggca
+      361 tccacttgat gcccccaaga atcctagtag aatgtttact accaaatgga atgatagtga
+      421 ctttagaatg cctccgtgag gctacattaa taaccataaa gcatgaacta tttaaagaag
+      481 caagaaaata ccccctccat caacttcttc aagatgaatc ttcttacatt ttcgtaagtg
+      541 ttactcaaga agcagaaagg gaagaatttt ttgatgaaac aagacgactt tgtgaccttc
+      601 ggctttttca acccttttta aaagtaattg aaccagtagg caaccgtgaa gaaaagatcc
+      661 tcaatcgaga aattggtttt gctatcggca tgccagtgtg tgaatttgat atggttaaag
+      721 atccagaagt acaggacttc cgaagaaata ttctgaacgt ttgtaaagaa gctgtggatc
+      781 ttagggacct caattcacct catagtagag caatgtatgt ctatcctcca aatgtagaat
+      841 cttcaccaga attgccaaag cacatatata ataaattaga taaagggcaa ataatagtgg
+      901 tgatctgggt aatagtttct ccaaataatg acaagcagaa gtatactctg aaaatcaacc
+      961 atgactgtgt accagaacaa gtaattgctg aagcaatcag gaaaaaaact cgaagtatgt
+     1021 tgctatcctc tgaacaacta aaactctgtg ttttagaata tcagggcaag tatattttaa
+     1081 aagtgtgtgg atgtgatgaa tacttcctag aaaaatatcc tctgagtcag tataagtata
+     1141 taagaagctg tataatgctt gggaggatgc ccaatttgat gttgatggct aaagaaagcc
+     1201 tttattctca actgccaatg gactgtttta caatgccatc ttattccaga cgcatttcca
+     1261 cagctacacc atatatgaat ggagaaacat ctacaaaatc cctttgggtt ataaatagtg
+     1321 cactcagaat aaaaattctt tgtgcaacct acgtgaatgt aaatattcga gacattgata
+     1381 agatctatgt tcgaacaggt atctaccatg gaggagaacc cttatgtgac aatgtgaaca
+     1441 ctcaaagagt accttgttcc aatcccaggt ggaatgaatg gctgaattat gatatataca
+     1501 ttcctgatct tcctcgtgct gctcgacttt gcctttccat ttgctctgtt aaaggccgaa
+     1561 agggtgctaa agaggaacac tgtccattgg catggggaaa tataaacttg tttgattaca
+     1621 cagacactct agtatctgga aaaatggctt tgaatctttg gccagtacct catggattag
+     1681 aagatttgct gaaccctatt ggtgttactg gatcaaatcc aaataaagaa actccatgct
+     1741 tagagttgga gtttgactgg ttcagcagtg tggtaaagtt cccagatatg tcagtgattg
+     1801 aagagcatgc caattggtct gtatcccgag aagcaggatt tagctattcc cacgcaggac
+     1861 tgagtaacag actagctaga gacaatgaat taagggaaaa tgacaaagaa cagctcaaag
+     1921 caatttctac acgagatcct ctctctgaaa tcactgagca ggagaaagat tttctatgga
+     1981 gtcacagaca ctattgtgta actatccccg aaattctacc caaattgctt ctgtctgtta
+     2041 aatggaattc tagagatgaa gtagcccaga tgtattgctt ggtaaaagat tggcctccaa
+     2101 tcaaacctga acaggctatg gaacttctgg actgtaatta cccagatcct atggttcgag
+     2161 gttttgctgt tcggtgcttg gaaaaatatt taacagatga caaactttct cagtatttaa
+     2221 ttcagctagt acaggtccta aaatatgaac aatatttgga taacttgctt gtgagatttt
+     2281 tactgaagaa agcattgact aatcaaagga ttgggcactt tttcttttgg catttaaaat
+     2341 ctgagatgca caataaaaca gttagccaga ggtttggcct gcttttggag tcctattgtc
+     2401 gtgcatgtgg gatgtatttg aagcacctga ataggcaagt cgaggcaatg gaaaagctca
+     2461 ttaacttaac tgacattctc aaacaggaga agaaggatga aacacaaaag gtacagatga
+     2521 agtttttagt tgagcaaatg aggcgaccag atttcatgga tgctctacag ggctttctgt
+     2581 ctcctctaaa ccctgctcat caactaggaa acctcaggct tgaagagtgt cgaattatgt
+     2641 cctctgcaaa aaggccactg tggttgaatt gggagaaccc agacatcatg tcagagttac
+     2701 tgtttcagaa caatgagatc atctttaaaa atggggatga tttacggcaa gatatgctaa
+     2761 cacttcaaat tattcgtatt atggaaaata tctggcaaaa tcaaggtctt gatcttcgaa
+     2821 tgttacctta tggttgtctg tcaatcggtg actgtgtggg acttattgag gtggtgcgaa
+     2881 attctcacac tattatgcaa attcagtgca aaggcggctt gaaaggtgca ctgcagttca
+     2941 acagccacac actacatcag tggctcaaag acaagaacaa aggagaaata tatgatgcag
+     3001 ccattgacct gtttacacgt tcatgtgctg gatactgtgt agctaccttc attttgggaa
+     3061 ttggagatcg tcacaatagt aacatcatgg tgaaagacga tggacaactg tttcatatag
+     3121 attttggaca ctttttggat cacaagaaga aaaaatttgg ttataaacga gaacgtgtgc
+     3181 catttgtttt gacacaggat ttcttaatag tgattagtaa aggagcccaa gaatgcacaa
+     3241 agacaagaga atttgagagg tttcaggaga tgtgttacaa ggcttatcta gctattcgac
+     3301 agcatgccaa tctcttcata aatcttttct caatgatgct tggctctgga atgccagaac
+     3361 tacaatcttt tgatgacatt gcatacattc gaaagaccct agccttagat aaaactgagc
+     3421 aagaggcttt ggagtatttc atgaaacaaa tgaatgatgc acatcatggt ggctggacaa
+     3481 caaaaatgga ttggatcttc cacacaatta aacagcatgc attgaactga aaagataact
+     3541 gagaaaatga aagctcactc tggattccac actgcactgt taataactct cagcaggcaa
+     3601 agaccgattg cataggaatt gcacaatcca tgaacagcat tagaatttac agcaagaaca
+     3661 gaaataaaat actatataat ttaaataatg taaacgcaaa cagggtttga tagcacttaa
+     3721 actagttcat ttcaaaatta agctttagaa taatgcgcaa tttcatgtta tgccttaagt
+     3781 ccaaaaaggt aaactttgaa gattgtttgt atcttttttt aaaaaacaaa acaaaacaaa
+     3841 aatccccaaa atatatagaa atgatggaga aggaaaaagt gatggttttt tttgtcttgc
+     3901 aaatgttcta tgttttgaaa tgtggacaca acaaaggctg ttattgcatt aggtgtaagt
+     3961 aaactggagt ttatgttaaa ttacattgat tggaaaagaa tgaaaatttc ttatttttcc
+     4021 attgctgttc aatttatagt ttgaagtggg tttttgactg cttgtttaat gaagaaaaat
+     4081 gcttggggtg gaagggactc ttgagatttc accagagact ttttcttttt aataaatcaa
+     4141 accttttgat gatttgaggt tttatctgca gttttggaag cagtcacaaa tgagacctgt
+     4201 tataaggtgg tatttttttt tttcttctgg acagtattta aaggatctta ttcttatttc
+     4261 ccagggaaat tctgggctcc cacaaagtaa aaaaaaaaaa aaatcataga aaaagaatga
+     4321 gcaggaatag ttcttattcc agaattgtac agtattcacc ttaagttgat tttttttctc
+     4381 cttctgcaat tgaactgaat acatttttca tgcatgtttt ccagaaaata gaagtattaa
+     4441 tgttattaaa aagattattt tttttattaa aggctattta tattatagaa actatcatta
+     4501 atatatattc tttatttaca tgatctgtcc catagtcatg cattgttttg caccccaaat
+     4561 tttttattgt tcatagcagc atggtcagct ttcttcttga tctatagatg aggctcaggc
+     4621 actatcccat ttataccaat aaccagtgta taactactta aggaaaacat aaaaacttca
+     4681 tcttctttcc ttttatttct tatgtgaatc tcccgtcttc cattctcttt tataattgag
+     4741 aatgtctcaa tcatatgaaa ttagttacca gaattaacac aatttagact atcttcctga
+     4801 ttccttaaac ccctttactg aagtatactc atgaataata ctttaaaata tgggggaata
+     4861 gaaaccatga actttttacc tttttaaact atttatccat atctccaaag tagaacatta
+     4921 aaccatttta agatatgtct cattcccaag tagtcagagc tcactctcca actttattaa
+     4981 atactatttg agcacaggac acattcttaa acattttgaa aaacattaac ccaagatgta
+     5041 gaggctactg ctagtcgtca ttctagaatc tgatatttta ctctgtattt gaaatgaatg
+     5101 attaatgtcc taggaaatta gctttagcag atgtccaggt gccacatcaa aaaagtgcaa
+     5161 taattattga cagtttttta gattaggcat attattggaa aacaacttta taaagagtga
+     5221 acattgtata ctctagtaaa acagcatcac tttaaaaata ttcatttatg aaatctgtta
+     5281 cctatagttg aagtcttgag tagtgaacaa gggactctaa taccaatact cttaatatct
+     5341 ggctatttta gatcccttaa agggcataat tattggaaat ttaggtattt cactaaagca
+     5401 tgtatataat attgccaaca agaaaagtaa atttgaagat taagggaact tacttctgca
+     5461 aactgtcttg cgatagttaa gcagaattta aactctgttt taagcaggaa accagaaaga
+     5521 ttattttgca gttgtagaag atttcataac ttattaaaac ttattaacat tttgtgttgt
+     5581 ttagatatag gcagttgata catactaaca tcccagcctt ttcaatatca gggttaaatt
+     5641 ataggaaaac tcagtaaaat ggtacaaatc tgaaagtttg atggtagaaa ctgaagattt
+     5701 aacagagaac tgtgttttac ccgagtgcca aaaatgctgt gagcctcctt gcacaaaatt
+     5761 tataccactt ttgcattttt atctatcagt ccagatagtt gtctcccctc cttctcccag
+     5821 gacctctcca ccattaaaat gcacaaacca catggccgat ttcaccattt acatttattt
+     5881 tcaaaagtta ctacaaccaa attaattcta ttagaagaaa tgtagacaaa ttctataaag
+     5941 actatagatt gtgacctaag aaagaaatga ggcaaagaac caaacattga attaaatgct
+     6001 acatgggtga ctaagatctg tttcaagtca gtgataatat agccacttct gggtacttca
+     6061 gtatcagaga tcagttctcg tggtttagac agttcctatc tatagctgac tatccttgtc
+     6121 cttgaatatg gtgtaactga ctattggctc tacagtttta ttgggccact taagaaatat
+     6181 ttccttgaat aattattttg agaaaaagtc taaaagtaat aaaaataatt ttaaacacac
+     6241 tgtagtaaga aatgactgtt ggaaaattat gctttcactt tctaccatat tctcagctat
+     6301 acaaaaccat ttattttgaa gatttttaga ctactgttaa tttgaaatct gttactctta
+     6361 ttgtggaatt tgttttttta aaaaagatgt ttctaattgg atttttaaaa gaagaatgga
+     6421 atttggttgc tattttacaa tagaacctaa gctttttgtg gttcttagtg tcctatgtaa
+     6481 aacttagtgt caaagtaatc aactttgaga ttttcccttc tattctgctt tatattaaaa
+     6541 gcccattaga aaatgggaac ctggtgaata tataatgaat tgtaaaatat tttaatgtgt
+     6601 aactttttca actgtgaaac tgacttgatt ttttgatgaa aacagctgct gataaagtat
+     6661 tttgtgtaaa gtgtagttct tattaatcag gaaaatgatg acttgattag actgtatatg
+     6721 ccctcttgga ttttatttta aatggattgg tgactttcac ataggtaaaa cacagtccat
+     6781 ctgtattctt ttttccatca aaaatcgagt gatttggaat tataaaaaaa ttgtgagcag
+     6841 cctatttgaa aggcatcatg gaaatttcac agcacaataa cacggatttg ttttttctta
+     6901 atgatgtaaa tccgtttaat tcatactttg atcaatagcc catgcttgcc aactctgaag
+     6961 aaatttaatt tccagcagta ttttaaagct agcctgttaa ctttttctga atatttaaag
+     7021 ttcctctttt ttctatgtct gcacaaactg cagacctggg ctggacccac atactcaaga
+     7081 gtccacctta agaaattatt ttgatgtcca agacatcact aaaatattta agtttaaaga
+     7141 taatatgtgg tgttaataga ttgtggtgct tttactattt aaagacaact ttcatacttc
+     7201 agatgttttt gagaagaggg gaatgtgagg ggagggggca gaacagggag gagttgtttg
+     7261 aatgaattac attctttata tccatcctgc tcatttgggg catgtcttta agagaaggct
+     7321 gaaagttgtg agagtatatt gtataccgta agagaatcaa ctcttcatca tggatgggat
+     7381 tgtgaaggct gaactataaa attcagcatt gacagcatcc tcaattaata attcttggtg
+     7441 acagaataat acagctgggc tgttttttaa aatataaaca ataccatttt taattattac
+     7501 attaaaaatt gtaaatatat ctatgtgcca tggcctggga agcctgcttt cttttttcat
+     7561 aaaaattatt tttactgtat gaaaagatca tggggtttag ctcaaaatat ctgtggtcct
+     7621 gataaaattg gattggtaac tctacctcag aaggaaaatg ggaaaaaaaa atagatgagt
+     7681 cacaattcaa tacttcaagc tcagaaactg tgcagatcac tgaattttag atttataaag
+     7741 tcagagttgg catgccttgt ttttaatgat atggaagacc ttaagaaaaa aacttggctg
+     7801 aagtttaatc gttggtccag ccatttgaaa aaggcaatag tttgaggagg ttcccgaatt
+     7861 cggcatttga aattcatttt gttctctctt cttcattatt agtgcatttg gtgtgtgtat
+     7921 acttgcacac aattctgttt gtgtacacac tgcttgctta gccctagtca agaggcatct
+     7981 tttataaaag gtgtaaagaa atatcaaggt tctaaaattc ggaagagttt agaatttatt
+     8041 aggagtttcc caagttggga tgttagtctt taaataaact tcatgcacct attccactta
+     8101 aggttttgca cctccttttt attagtgcag tgccatttct tctgcttgat tttaggtatg
+     8161 ttaatattcc agccttgcta gttagcataa agtgacaggt gtgagccatg aggaaatttt
+     8221 ctgacttaat ttgtacacaa ctacatataa gagttttagt ggaggaaaaa aattagtccc
+     8281 ttgtgcgtat acagtagtta ggtaaatgat ttttctacca acagtatact ccattcctca
+     8341 tgtaggtaag tacagaaaag gtttttaaat gtattttttt agccagttaa agtctatgaa
+     8401 tctatctgca accttattta atctgtcact ataataattt tgtggttatg ctaagaacca
+     8461 tgtatacttt taggtattct tatttttgtc aatttttcta ggttggcaag gaggcagaaa
+     8521 accttcattg tttcatatta aaatataatt agactaaact taattctagt atgaatttcc
+     8581 aaaatcatta tctatttatt tcatttttat ttaattttgt ttttatttca tttttaaaag
+     8641 tcccttgttc aatttaactt atgttcctaa gagaggttgg agaacttggc cttcatctga
+     8701 tttcaaaaat gttttgagtt tcaaatgaag ttaatggttt cagtgtgatt cagtcctcag
+     8761 acctaattgg gttgaataaa atctaaaaga atataccctt ttggagcata acattttaat
+     8821 accttgggga atgtggcact accaaaagaa gactactaac acgtcagatg ttcacctgga
+     8881 agctttatca agaaattcga accacccttt tggccccatt aattgtagca agtttatttc
+     8941 tctatatttt gtcattcagt gaattgaagt cctgtggtat actgcattca ttagaagaaa
+     9001 aacgttttta atgtcctttt aatgatggcc cagaaagcat ttgacacagc aagatgcatg
+     9061 tgttactata ttgagaatat agaataataa cagtatcact aaatttaaga cctcttccca
+     9121 gtcttgctgt tcctagcaag aagtttggcc tgtgactgca cttactgttt atgctcatca
+     9181 gaaactgtca atgtctgctt ttctttaact ctgcagtctg taacatcacg ctgtttatta
+     9241 aaaaaaaaaa gaaaaatta
+//
+
