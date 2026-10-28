@@ -58,9 +58,58 @@ import tile as tile_mod  # noqa: E402
 #: following whatever happens to be in ``results/``. Pointing it at another
 #: dataset is these three lines plus the expectations below.
 DATA_DIR = os.path.join(_ROOT, "data", "pik3-iso")
+PPIB_DIR = os.path.join(_ROOT, "data", "ppib")
 RESULTS_DIR = os.path.join(_ROOT, "results", "pik3")
 TILES_FASTA = os.path.join(RESULTS_DIR, "tiles.fasta")
 CLASSIFICATION = os.path.join(RESULTS_DIR, "classification.tsv")
+
+#: The reference this check is pinned to: the four PI3K paralogs that
+#: ``results/pik3/`` was generated from, one RefSeq variant each.
+#:
+#: Named accession by accession rather than discovered with
+#: ``find_fasta_files(DATA_DIR)``, because that directory holds more than these
+#: four and what else it holds has changed over time. It also carries other
+#: transcript variants of the same four genes (``PIK3CA.fasta`` is
+#: XM_054346848.1, not NM_006218.4) and gapped alignment output
+#: (``PIK3CA_aligned.fasta`` is 27,176 nt of which 17,490 are ``-``). Globbing
+#: either of those into the reference breaks this check in a way that reads as
+#: a classifier bug: extra variants of a gene add hits the committed
+#: classification never saw, and a gapped record is not sequence at all.
+#:
+#: The failure is also silent in the worst case -- ``PIK3CA.fasta`` and
+#: ``PIK3CA_aligned.fasta`` share an accession, so a dict keyed on
+#: ``transcript_id`` keeps whichever sorts last and the gapped one wins.
+#:
+#: PPIB rides along as a **negative control**, not as a fifth family member. It
+#: is the housekeeping transcript the knockdown work measures against, so a PI3K
+#: guide that also cut PPIB would invalidate its own control -- worth asserting
+#: rather than assuming. It is deliberately *not* part of the tiled dataset: no
+#: tile originates from it, so the self-hit invariant says nothing about it, and
+#: its only job here is to stay absent from every hit set.
+#:
+#: Adding it cannot perturb the agreement with ``classification.tsv``, which was
+#: produced over the four paralogs alone: no PI3K tile occurs in PPIB on either
+#: strand, and the longest exact k-mer any of the 28,032 tiles shares with it is
+#: 16 nt, half a spacer. Should that ever stop being true, the hit-set test is
+#: what fails, and it fails loudly.
+#:
+#: Each accession carries its own directory because PPIB belongs to a different
+#: dataset: ``data/ppib`` is tiled into ``results/ppib``, independently of this.
+#:
+#: Pointing this check at another dataset means these accessions, the
+#: directories above, and the expectations below.
+REFERENCE_FASTAS = {
+    "NM_002649.3": DATA_DIR,   # PIK3CG
+    "NM_005026.5": DATA_DIR,   # PIK3CD
+    "NM_006218.4": DATA_DIR,   # PIK3CA
+    "NM_006219.3": DATA_DIR,   # PIK3CB
+    "NM_000942.5": PPIB_DIR,   # PPIB -- control, no tiles of its own
+}
+
+#: The genes a tile may legitimately hit. PPIB is in the reference but not in
+#: here, so a hit on it is a failure rather than a new label.
+FAMILY_GENES = frozenset({"PIK3CA", "PIK3CB", "PIK3CD", "PIK3CG"})
+CONTROL_GENES = frozenset({"PPIB"})
 
 #: Tiles to check unless PIK3_BLAST_SAMPLE says otherwise. 400 keeps the test
 #: under a few seconds while still covering every transcript.
@@ -96,12 +145,44 @@ class TestBlastAgreesWithClassification(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
 
+        # Read by name, and fail rather than skip on a missing one: a silently
+        # smaller reference would drop real cross-family hits and the
+        # disagreement would land on the classifier.
+        paths = {
+            accession: os.path.join(directory, f"{accession}.fasta")
+            for accession, directory in REFERENCE_FASTAS.items()
+        }
+        absent = sorted(p for p in paths.values() if not os.path.isfile(p))
+        assert not absent, (
+            "reference FASTA(s) missing: "
+            + ", ".join(os.path.relpath(p, _ROOT) for p in absent)
+        )
+
         records = [
-            record
-            for path in tile_mod.find_fasta_files(DATA_DIR)
-            for record in tile_mod.read_fasta(path)
+            record for path in paths.values() for record in tile_mod.read_fasta(path)
         ]
+
+        # The filename is not the accession: a file named NM_006218.4.fasta
+        # holding some other record would give a reference that silently is
+        # not what this check claims to validate.
+        found = tuple(sorted(record.transcript_id for record in records))
+        assert found == tuple(sorted(paths)), (
+            f"reference holds {found}, expected {tuple(sorted(paths))} -- one "
+            "of the reference FASTAs does not contain the accession its name "
+            "claims"
+        )
+
         cls.genes = classify_mod.gene_symbols(records)
+
+        # The control has to actually be in the reference for its absence from
+        # the hit sets to mean anything. Asserted rather than trusted, because
+        # a typo in REFERENCE_FASTAS would otherwise turn the control into no
+        # test at all -- it would simply never be hit.
+        symbols = set(cls.genes.values())
+        assert symbols == FAMILY_GENES | CONTROL_GENES, (
+            f"reference spans {sorted(symbols)}, expected "
+            f"{sorted(FAMILY_GENES | CONTROL_GENES)}"
+        )
         cls.sequences = {record.transcript_id: record.sequence for record in records}
 
         with open(TILES_FASTA, encoding="utf-8") as handle:
@@ -235,6 +316,30 @@ class TestBlastAgreesWithClassification(unittest.TestCase):
             {row["class_exact"] for row in self.rows.values()},
             {"specific"},
             "classification reports a class other than 'specific'",
+        )
+
+    def test_no_tile_hits_the_control_gene(self):
+        """PPIB is in the reference so that this can be asserted, not assumed.
+
+        PPIB is the housekeeping transcript the knockdown work normalises
+        against, so a PI3K guide with an exact match in it would be measuring
+        its own control away. It carries no tiles of its own: it is here purely
+        to be missed.
+
+        This is the one test in the file whose expected answer is an empty set,
+        so `setUpClass` separately asserts PPIB is actually *in* the reference.
+        Without that, a typo would make this pass by testing nothing.
+        """
+        hits = {
+            tile_id: sorted(genes & CONTROL_GENES)
+            for tile_id, genes in self.blast_hits.items()
+            if genes & CONTROL_GENES
+        }
+        self.assertEqual(
+            hits,
+            {},
+            f"{len(hits)} tile(s) exactly match a control gene, e.g. "
+            f"{list(hits.items())[:3]}",
         )
 
     def test_blast_agrees_with_the_substring_oracle(self):
