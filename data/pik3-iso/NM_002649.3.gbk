@@ -1,0 +1,439 @@
+LOCUS       NM_002649               7218 bp    mRNA    linear   PRI 07-JUL-2026
+DEFINITION  Homo sapiens phosphatidylinositol-4,5-bisphosphate 3-kinase
+            catalytic subunit gamma (PIK3CG), transcript variant 1, mRNA.
+ACCESSION   NM_002649
+VERSION     NM_002649.3
+KEYWORDS    RefSeq.
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 7218)
+  AUTHORS   Gu,H., Chen,C., Hou,Z.S., He,X.D., Xie,S., Ni,J., Qian,C.,
+            Cheng,X., Jiang,T., Yang,C., Roberts,T.M., Zheng,J., Varner,J.A.,
+            Armstrong,S.A. and Zhao,J.J.
+  TITLE     PI3Kgamma maintains the self-renewal of acute myeloid leukemia stem
+            cells by regulating the pentose phosphate pathway
+  JOURNAL   Blood 143 (19), 1965-1979 (2024)
+   PUBMED   38271660
+  REMARK    GeneRIF: PI3Kgamma maintains the self-renewal of acute myeloid
+            leukemia stem cells by regulating the pentose phosphate pathway.
+REFERENCE   2  (bases 1 to 7218)
+  AUTHORS   Sun,Y., Stenson,K., Mohan,M.L., Gupta,M.K., Wanner,N., Asosingh,K.,
+            Erzurum,S. and Naga Prasad,S.V.
+  TITLE     Hypoxia Sensing of beta-Adrenergic Receptor Is Regulated by
+            Endosomal PI3Kgamma
+  JOURNAL   Circ Res 132 (6), 690-703 (2023)
+   PUBMED   36779349
+  REMARK    GeneRIF: Hypoxia Sensing of beta-Adrenergic Receptor Is Regulated
+            by Endosomal PI3Kgamma.
+REFERENCE   3  (bases 1 to 7218)
+  AUTHORS   Jung,I., Lee,H.W., Roh,M.S., Lee,J.S., Kim,K., Kim,K., Kim,T.G. and
+            Nam,H.Y.
+  TITLE     High expression of the phosphoinositide 3-kinase p11gamma isoform
+            can predict poor prognosis of non-small cell lung cancer
+  JOURNAL   Histol Histopathol 37 (12), 1177-1184 (2022)
+   PUBMED   35673779
+  REMARK    GeneRIF: High expression of the phosphoinositide 3-kinase p11gamma
+            isoform can predict poor prognosis of non-small cell lung cancer.
+REFERENCE   4  (bases 1 to 7218)
+  AUTHORS   Silva,M.C., Fuzo,C.A., Marques Paiva,I., Lopes Bibo,N., Tavares de
+            Oliveira,M., da Silva Soares,H.A., Chevillard,C., Kalil,J.,
+            Cunha-Neto,E., Cunha,T.M. and Silva,J.S.
+  TITLE     Synonymous mutation rs1129293 is associated with PIK3CG expression
+            and PI3Kgamma activation in patients with chronic Chagas
+            cardiomyopathy
+  JOURNAL   Immunobiology 227 (5), 152242 (2022)
+   PUBMED   35870262
+  REMARK    GeneRIF: Synonymous mutation rs1129293 is associated with PIK3CG
+            expression and PI3Kgamma activation in patients with chronic Chagas
+            cardiomyopathy.
+REFERENCE   5  (bases 1 to 7218)
+  AUTHORS   Klaus,F.L., Kirsch,C., Muller,J.P., Huber,O. and Reiche,J.
+  TITLE     PI3Kgamma is a novel regulator of TNFalpha signaling in the human
+            colon cell line HT29/B6
+  JOURNAL   Ann N Y Acad Sci 1515 (1), 196-207 (2022)
+   PUBMED   35725890
+  REMARK    GeneRIF: PI3Kgamma is a novel regulator of TNFalpha signaling in
+            the human colon cell line HT29/B6.
+REFERENCE   6  (bases 1 to 7218)
+  AUTHORS   Milani,D., Mazzoni,M., Borgatti,P., Zauli,G., Cantley,L. and
+            Capitani,S.
+  TITLE     Extracellular human immunodeficiency virus type-1 Tat protein
+            activates phosphatidylinositol 3-kinase in PC12 neuronal cells
+  JOURNAL   J Biol Chem 271 (38), 22961-22964 (1996)
+   PUBMED   8798481
+REFERENCE   7  (bases 1 to 7218)
+  AUTHORS   Stoyanov,B., Volinia,S., Hanck,T., Rubio,I., Loubtchenkov,M.,
+            Malek,D., Stoyanova,S., Vanhaesebroeck,B., Dhand,R., Nurnberg,B. et
+            al.
+  TITLE     Cloning and characterization of a G protein-activated human
+            phosphoinositide-3 kinase
+  JOURNAL   Science 269 (5224), 690-693 (1995)
+   PUBMED   7624799
+REFERENCE   8  (bases 1 to 7218)
+  AUTHORS   Blume-Jensen,P., Ronnstrand,L., Gout,I., Waterfield,M.D. and
+            Heldin,C.H.
+  TITLE     Modulation of Kit/stem cell factor receptor-induced signaling by
+            protein kinase C
+  JOURNAL   J Biol Chem 269 (34), 21793-21802 (1994)
+   PUBMED   7520444
+REFERENCE   9  (bases 1 to 7218)
+  AUTHORS   Dhand,R., Hiles,I., Panayotou,G., Roche,S., Fry,M.J., Gout,I.,
+            Totty,N.F., Truong,O., Vicendo,P., Yonezawa,K. et al.
+  TITLE     PI 3-kinase is a dual specificity enzyme: autoregulation by an
+            intrinsic protein-serine kinase activity
+  JOURNAL   EMBO J 13 (3), 522-533 (1994)
+   PUBMED   8313897
+REFERENCE   10 (bases 1 to 7218)
+  AUTHORS   Kanai,F., Ito,K., Todaka,M., Hayashi,H., Kamohara,S., Ishii,K.,
+            Okada,T., Hazeki,O., Ui,M. and Ebina,Y.
+  TITLE     Insulin-stimulated GLUT4 translocation is relevant to the
+            phosphorylation of IRS-1 and the activity of PI3-kinase
+  JOURNAL   Biochem Biophys Res Commun 195 (2), 762-768 (1993)
+   PUBMED   8396927
+COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
+            reference sequence was derived from X83368.1, BC035683.1,
+            AC005018.2 and AA810265.1.
+            
+            On Sep 6, 2013 this sequence version replaced NM_002649.2.
+            
+            Summary: Phosphoinositide 3-kinases (PI3Ks) phosphorylate inositol
+            lipids and are involved in the immune response. The protein encoded
+            by this gene is a class I catalytic subunit of PI3K. Like other
+            class I catalytic subunits (p110-alpha p110-beta, and p110-delta),
+            the encoded protein binds a p85 regulatory subunit to form PI3K.
+            This gene is located in a commonly deleted segment of chromosome 7
+            previously identified in myeloid leukemias. Several transcript
+            variants encoding the same protein have been found for this gene.
+            [provided by RefSeq, Jun 2015].
+            
+            Transcript Variant: This variant (1) represents the longest
+            transcript. All three variants encode the same protein.
+            
+            Sequence Note: This RefSeq record was created from transcript and
+            genomic sequence data to make the sequence consistent with the
+            reference genome assembly. The genomic coordinates used for the
+            transcript record were based on transcript alignments.
+            
+            Publication Note:  This RefSeq record includes a subset of the
+            publications that are available for this gene. Please see the Gene
+            record to access additional publications.
+            
+            ##Evidence-Data-START##
+            Transcript exon combination :: X83368.1 [ECO:0000332]
+            RNAseq introns              :: single sample supports all introns
+                                           SAMEA1965299, SAMEA1966682
+                                           [ECO:0000348]
+            ##Evidence-Data-END##
+            COMPLETENESS: complete on the 3' end.
+PRIMARY     REFSEQ_SPAN         PRIMARY_IDENTIFIER PRIMARY_SPAN        COMP
+            1-394               X83368.1           14-407
+            395-1281            BC035683.1         138-1024
+            1282-1291           AC005018.2         17505-17514
+            1292-2334           BC035683.1         1035-2077
+            2335-4443           X83368.1           2345-4453
+            4444-7202           AC005018.2         55184-57942
+            7203-7218           AA810265.1         1-16                c
+FEATURES             Location/Qualifiers
+     source          1..7218
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /chromosome="7"
+                     /map="7q22.3"
+     gene            1..7218
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="phosphatidylinositol-4,5-bisphosphate 3-kinase
+                     catalytic subunit gamma"
+                     /db_xref="GeneID:5294"
+                     /db_xref="HGNC:HGNC:8978"
+                     /db_xref="MIM:601232"
+     exon            1..298
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     exon            299..2305
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     misc_feature    305..307
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="upstream in-frame stop codon"
+     CDS             311..3619
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /EC_number="2.7.1.137"
+                     /EC_number="2.7.1.154"
+                     /EC_number="2.7.11.1"
+                     /EC_number="2.7.1.153"
+                     /note="phosphatidylinositol 3-kinase catalytic 110-kD
+                     gamma; phosphatidylinositol 3 kinase gamma, p110 gamma;
+                     phosphoinositide-3-kinase gamma catalytic subunit;
+                     1-phosphatidylinositol 3-kinase; PI3-kinase subunit gamma;
+                     ptdIns-3-kinase subunit gamma; ptdIns-3-kinase subunit
+                     p110-gamma; phosphatidylinositol-4,5-bisphosphate 3-kinase
+                     110 kDa catalytic subunit gamma; serine/threonine protein
+                     kinase PIK3CG"
+                     /codon_start=1
+                     /product="phosphatidylinositol 4,5-bisphosphate 3-kinase
+                     catalytic subunit gamma isoform"
+                     /protein_id="NP_002640.2"
+                     /db_xref="CCDS:CCDS5739.1"
+                     /db_xref="GeneID:5294"
+                     /db_xref="HGNC:HGNC:8978"
+                     /db_xref="MIM:601232"
+                     /translation="MELENYKQPVVLREDNCRRRRRMKPRSAAASLSSMELIPIEFVL
+                     PTSQRKCKSPETALLHVAGHGNVEQMKAQVWLRALETSVAADFYHRLGPHHFLLLYQK
+                     KGQWYEIYDKYQVVQTLDCLRYWKATHRSPGQIHLVQRHPPSEESQAFQRQLTALIGY
+                     DVTDVSNVHDDELEFTRRGLVTPRMAEVASRDPKLYAMHPWVTSKPLPEYLWKKIANN
+                     CIFIVIHRSTTSQTIKVSPDDTPGAILQSFFTKMAKKKSLMDIPESQSEQDFVLRVCG
+                     RDEYLVGETPIKNFQWVRHCLKNGEEIHVVLDTPPDPALDEVRKEEWPLVDDCTGVTG
+                     YHEQLTIHGKDHESVFTVSLWDCDRKFRVKIRGIDIPVLPRNTDLTVFVEANIQHGQQ
+                     VLCQRRTSPKPFTEEVLWNVWLEFSIKIKDLPKGALLNLQIYCGKAPALSSKASAESP
+                     SSESKGKVQLLYYVNLLLIDHRFLLRRGEYVLHMWQISGKGEDQGSFNADKLTSATNP
+                     DKENSMSISILLDNYCHPIALPKHQPTPDPEGDRVRAEMPNQLRKQLEAIIATDPLNP
+                     LTAEDKELLWHFRYESLKHPKAYPKLFSSVKWGQQEIVAKTYQLLARREVWDQSALDV
+                     GLTMQLLDCNFSDENVRAIAVQKLESLEDDDVLHYLLQLVQAVKFEPYHDSALARFLL
+                     KRGLRNKRIGHFLFWFLRSEIAQSRHYQQRFAVILEAYLRGCGTAMLHDFTQQVQVIE
+                     MLQKVTLDIKSLSAEKYDVSSQVISQLKQKLENLQNSQLPESFRVPYDPGLKAGALAI
+                     EKCKVMASKKKPLWLEFKCADPTALSNETIGIIFKHGDDLRQDMLILQILRIMESIWE
+                     TESLDLCLLPYGCISTGDKIGMIEIVKDATTIAKIQQSTVGNTGAFKDEVLNHWLKEK
+                     SPTEEKFQAAVERFVYSCAGYCVATFVLGIGDRHNDNIMITETGNLFHIDFGHILGNY
+                     KSFLGINKERVPFVLTPDFLFVMGTSGKKTSPHFQKFQDICVKAYLALRHHTNLLIIL
+                     FSMMLMTGMPQLTSKEDIEYIRDALTVGKNEEDAKKYFLDQIEVCRDKGWTVQFNWFL
+                     HLVLGIKQGEKHSA"
+     misc_feature    2717..2737
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="propagated from UniProtKB/Swiss-Prot (P48736.3);
+                     Region: G-loop.
+                     /evidence=ECO:0000255|PROSITE-ProRule:PRU00269"
+     misc_feature    3137..3163
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="propagated from UniProtKB/Swiss-Prot (P48736.3);
+                     Region: Catalytic loop.
+                     /evidence=ECO:0000255|PROSITE-ProRule:PRU00269"
+     misc_feature    3194..3274
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="propagated from UniProtKB/Swiss-Prot (P48736.3);
+                     Region: Activation loop.
+                     /evidence=ECO:0000255|PROSITE-ProRule:PRU00269"
+     misc_feature    3380..3382
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="Phosphothreonine, by PKA.
+                     /evidence=ECO:0000250|UniProtKB:Q9JHG7; propagated from
+                     UniProtKB/Swiss-Prot (P48736.3); phosphorylation site"
+     misc_feature    3611..3613
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="Phosphoserine, by autocatalysis.
+                     /evidence=ECO:0000269|PubMed:12502714; propagated from
+                     UniProtKB/Swiss-Prot (P48736.3); phosphorylation site"
+     exon            2306..2371
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2372..2597
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2598..2701
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2702..2848
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2849..2939
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2940..3070
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     exon            3071..3182
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     exon            3183..3340
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     exon            3341..7210
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /inference="alignment:Splign:2.1.0"
+     regulatory      4030..4035
+                     /regulatory_class="polyA_signal_sequence"
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="hexamer: AAGAAA"
+     polyA_site      4053
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="major polyA site"
+     regulatory      7115..7120
+                     /regulatory_class="polyA_signal_sequence"
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="hexamer: AATAAA"
+     polyA_site      7138
+                     /gene="PIK3CG"
+                     /gene_synonym="IMD97; p110gamma; p120-PI3K; PI3CG; PI3K;
+                     PI3Kgamma; PIK3"
+                     /note="major polyA site"
+ORIGIN      
+        1 gcacttcctt ctcggctaga ttatctgaaa ctgttgtcgg ttcttgagat gatactacca
+       61 ccgaatgtct gtgtttcatt gtctagtcca acctgtattg tggatatcta caacgttccg
+      121 gcaatagttt tgcaggtgca tcacattttt gtttttgttt tgggaggaaa agggagggca
+      181 cggcagccag gcttcatatt cctacaagtg catgcttcaa gattactgta cttacagtgt
+      241 ttccaacatc ttctcataaa aggggaaagc ttcatagcct caaccatgaa ggaaaccagt
+      301 cgcatagggc atggagctgg agaactataa acagcccgtg gtgctgagag aggacaactg
+      361 ccgaaggcgc cggaggatga agccgcgcag tgctgcggcc agcctgtcct ccatggagct
+      421 catccccatc gagttcgtgc tgcccaccag ccagcgcaaa tgcaagagcc ccgaaacggc
+      481 gctgctgcac gtggccggcc acggcaacgt ggagcagatg aaggcccagg tgtggctgcg
+      541 agcgctggag accagcgtgg cggcggactt ctaccaccgg ctgggaccgc atcacttcct
+      601 cctgctctat cagaagaagg ggcagtggta cgagatctac gacaagtacc aggtggtgca
+      661 gactctggac tgcctgcgct actggaaggc cacgcaccgg agcccgggcc agatccacct
+      721 ggtgcagcgg cacccgccct ccgaggagtc ccaagccttc cagcggcagc tcacggcgct
+      781 gattggctat gacgtcactg acgtcagcaa cgtgcacgac gatgagctgg agttcacgcg
+      841 ccgtggcttg gtgaccccgc gcatggcgga ggtggccagc cgcgacccca agctctacgc
+      901 catgcacccg tgggtgacgt ccaagcccct cccggagtac ctgtggaaga agattgccaa
+      961 caactgcatc ttcatcgtca ttcaccgcag caccaccagc cagaccatta aggtctcacc
+     1021 cgacgacacc cccggcgcca tcctgcagag cttcttcacc aagatggcca agaagaaatc
+     1081 tctgatggat attcccgaaa gccaaagcga acaggatttt gtgctgcgcg tctgtggccg
+     1141 ggatgagtac ctggtgggcg aaacgcccat caaaaacttc cagtgggtga ggcactgcct
+     1201 caagaacgga gaagagattc acgtggtact ggacacgcct ccagacccgg ccctagacga
+     1261 ggtgaggaag gaagagtggc cactggtgga tgactgcacg ggagtcaccg gctaccatga
+     1321 gcagcttacc atccacggca aggaccacga gagtgtgttc accgtgtccc tgtgggactg
+     1381 cgaccgcaag ttcagggtca agatcagagg cattgatatc cccgtcctgc ctcggaacac
+     1441 cgacctcaca gtttttgtag aggcaaacat ccagcatggg caacaagtcc tttgccaaag
+     1501 gagaaccagc cccaaaccct tcacagagga ggtgctgtgg aatgtgtggc ttgagttcag
+     1561 tatcaaaatc aaagacttgc ccaaaggggc tctactgaac ctccagatct actgcggtaa
+     1621 agctccagca ctgtccagca aggcctctgc agagtccccc agttctgagt ccaagggcaa
+     1681 agttcagctt ctctattatg tgaacctgct gctgatagac caccgtttcc tcctgcgccg
+     1741 tggagaatac gtcctccaca tgtggcagat atctgggaag ggagaagacc aaggaagctt
+     1801 caatgctgac aaactcacgt ctgcaactaa cccagacaag gagaactcaa tgtccatctc
+     1861 cattcttctg gacaattact gccacccgat agccctgcct aagcatcagc ccacccctga
+     1921 cccggaaggg gaccgggttc gagcagaaat gcccaaccag cttcgcaagc aattggaggc
+     1981 gatcatagcc actgatccac ttaaccctct cacagcagag gacaaagaat tgctctggca
+     2041 ttttagatac gaaagcctta agcacccaaa agcatatcct aagctattta gttcagtgaa
+     2101 atggggacag caagaaattg tggccaaaac ataccaattg ttggccagaa gggaagtctg
+     2161 ggatcaaagt gctttggatg ttgggttaac aatgcagctc ctggactgca acttctcaga
+     2221 tgaaaatgta agagccattg cagttcagaa actggagagc ttggaggacg atgatgttct
+     2281 gcattacctt ctacaattgg tccaggctgt gaaatttgaa ccataccatg atagcgccct
+     2341 tgccagattt ctgctgaagc gtggtttaag aaacaaaaga attggtcact ttttgttttg
+     2401 gttcttgaga agtgagatag cccagtccag acactatcag cagaggttcg ctgtgattct
+     2461 ggaagcctat ctgaggggct gtggcacagc catgctgcac gactttaccc aacaagtcca
+     2521 agtaatcgag atgttacaaa aagtcaccct tgatattaaa tcgctctctg ctgaaaagta
+     2581 tgacgtcagt tcccaagtta tttcacaact taaacaaaag cttgaaaacc tgcagaattc
+     2641 tcaactcccc gaaagcttta gagttccata tgatcctgga ctgaaagcag gagcgctggc
+     2701 aattgaaaaa tgtaaagtaa tggcctccaa gaaaaaacca ctatggcttg agtttaaatg
+     2761 tgccgatcct acagccctat caaatgaaac aattggaatt atctttaaac atggtgatga
+     2821 tctgcgccaa gacatgctta ttttacagat tctacgaatc atggagtcta tttgggagac
+     2881 tgaatctttg gatctatgcc tcctgccata tggttgcatt tcaactggtg acaaaatagg
+     2941 aatgatcgag attgtgaaag acgccacgac aattgccaaa attcagcaaa gcacagtggg
+     3001 caacacggga gcatttaaag atgaagtcct gaatcactgg ctcaaagaaa aatcccctac
+     3061 tgaagaaaag tttcaggcag cagtggagag atttgtttat tcctgtgcag gctactgtgt
+     3121 ggcaaccttt gttcttggaa taggcgacag acacaatgac aatattatga tcaccgagac
+     3181 aggaaaccta tttcatattg acttcgggca cattcttggg aattacaaaa gtttcctggg
+     3241 cattaataaa gagagagtgc catttgtgct aacccctgac ttcctctttg tgatgggaac
+     3301 ttctggaaag aagacaagcc cacacttcca gaaatttcag gacatctgtg ttaaggctta
+     3361 tctagccctt cgtcatcaca caaacctact gatcatcctg ttctccatga tgctgatgac
+     3421 aggaatgccc cagttaacaa gcaaagaaga cattgaatat atccgggatg ccctcacagt
+     3481 ggggaaaaat gaggaggatg ctaaaaagta ttttcttgat cagatcgaag tttgcagaga
+     3541 caaaggatgg actgtgcagt ttaattggtt tctacatctt gttcttggca tcaaacaagg
+     3601 agagaaacat tcagcctaat actttaggct agaatcaaaa acaagttagt gttctatggt
+     3661 ttaaattagc atagcaatca tcgaacttgg atttcaaatg caatagacat tgtgaaagct
+     3721 ggcatttcag aagtatagct cttttcctac ctgaactctt ccctggagaa aagatgttgg
+     3781 cattgctgat tgtttggtta agcaatgtcc agtgctagga ttatttgcag gtttggtttt
+     3841 ttctcatttg tctgtggcat tggagaatat tctcggttta aacagactaa tgacttcctt
+     3901 attgtccctg atattttgac tatcttacta ttgagtgctt ctggaaattc tttggaataa
+     3961 ttgatgacat ctattttcat ctgggtttag tctcaatttt ggttatcttt gtgttcctca
+     4021 agctctttaa agaaaaagat gtaatcgttg taacctttgt ctcattcctt aaatgatgct
+     4081 tccaaacatc tccttagtgt ctgcaggtgt tagtggtgtg ctaaaagcaa ggaaagcgag
+     4141 ttagtctttt cagtgtcttt tgcaattcaa ttcttttgtc atgtataact gagacacaca
+     4201 aacacagcag gagaaatcta aaccgttgtg ccttgacctt cctctgctgg tcttgttcca
+     4261 gggttatgaa tatgaaaaaa tagagatgag actttttgtg tcaactctgt ccacaagagt
+     4321 gagttatcta gtatgattag tatagctttc tccagcatgg cagcaggaag taactacagg
+     4381 gcctctttta tgcctgacat ttcttccctt cctttttccc tgcctccctt tttcatcaat
+     4441 tgcgatgctc ccacaactct ttacagactt gtgaaatctt caagaacacc tttactctat
+     4501 aactcaaaaa ttagttgaaa aataattact tctcaaggat tattagaatc ttaggtactt
+     4561 atttgtaaag atgtttagtg actttttttt caagtatctt attaaaggag gcattctaga
+     4621 aaatatgaat tagtttccaa atgccttaat tttaaacttt ggcctgaaca gttttttctt
+     4681 tttcttaatg gaagaagata tttaatatct taaaaatatt ccaagttagg aagaacacta
+     4741 cttgccttat ccatttccca tttaaaggac ttttaaactt tgacacatcc ttcagatttc
+     4801 ctgaaaataa ttgaaatatc ttactttaaa aatattttca tctctgaaat atctcgttat
+     4861 ttattggagg tattgtttaa ccttagagag accattaaat tatttataaa atattttgta
+     4921 attacctgta gctaatacat tacatagaaa aaaactatgt taacagtgtc tctgtttaag
+     4981 tataatcaga tataaatata tacttaattt tttaatttta aaaatagata cctgtttgac
+     5041 tttgaggtag tccagacctt ttcttttttt tttttttttt aatgtgtgca aaagcccaaa
+     5101 ggttcctaag cctggctgca aagaagaatc aacagggaca ctttttaaaa acactcttat
+     5161 cagcctgggc aacacagtga gactccatct cttaaaaaaa aaattagctg ggtatagtgg
+     5221 tatgtgcctg tagtcccagg tactcaggag gctgaggcag gaggattgcc tgagcccagg
+     5281 aggtggaaac tgcagagagt catgatcatg tccttacact ccagcctgga taacagagcg
+     5341 agaccctgtc tcaaaaaaat aaaataaaaa ataaaaacac ccttgcctgc gctccattcc
+     5401 caggttataa tttaattact gtgggatgag acccagacat caatattttt ctagattctt
+     5461 caggtgattc taattcacag ccagagttgg aagccctgcg tggcctttga aggtctagat
+     5521 gattcttctt ccttgccctt tgagcttttc cccatctcac aggtatctag aaaaaaactc
+     5581 ctcttctttg gcaacctgtc cttttaaaat cacactctac ccacctgtac agaagaccat
+     5641 gccctataat gaaatgttta ttcctatcta taaatggagg ataaacattt tgtggcactt
+     5701 ctggaccaac tattccctac tattcttttg aagaaaggca ggaagagtac tttctaattc
+     5761 agaagaggat gttttcacta ttctgataaa caatagccaa gttcagacct tgtacagatt
+     5821 ctttttattt gaattgctga aataatttat tgatgatgaa aaaaagatta gagaggaata
+     5881 catttatatt tagcttattg gcacatgtgc atacatattt cctcttcaaa tgaaccagtt
+     5941 ctttcatttc attatgctaa tatatatata taacatatat atgctaatat atatataaca
+     6001 tatatatgct aatatatata tatcacacat atatatcaca gttttatata tatatatgta
+     6061 tgtgtgtgtg tatatatata tatatatatc acagttgggc ttgattcttc cgtattccaa
+     6121 agagcataat ttcagttcta tagacttata gataaataaa aatcatcttt gtgggcttcc
+     6181 ttcctttact gttcgcagtg aattacatga cgaacaactt ctataccttt gaaaatgttc
+     6241 tagaactaga atcatcctgc tactgggaac tacccacagc tctatcttca atgccaggtg
+     6301 aaaacacaga tcacaagtca gatgaatcag gccaaagcaa cttttatgta tatctaggac
+     6361 tggcgacata atttgcagag cccagtgaac agtgaaaatg cagtcccatc attcaaaaat
+     6421 tattaagaaa ttcgagatgg caacagcagt tgtcacacca agcacagtgc ccttctgagc
+     6481 atgaggctct gtgtgactgc atgggtccat gagaccagca ctgtgtgggt ctgaatgatg
+     6541 gctttggtgt tcagtttagc acacgcggtc taccacgtct gcatgagtgg taaatgtagt
+     6601 gcctgggtca aaatgttcct tctgttcaaa tcgaaatacc tcatctctat ggctctatgg
+     6661 ctgtacatta ggacctagaa cagtggccca ttgctcttag actggaacca tgtccactaa
+     6721 aataaaccta agcagatgtt gtagacctag ccccacagga ctgcatttag ctgcttcagt
+     6781 gacactttga tgaaagtatg gagaagtgga gacattatag ataaaatata tcaattccca
+     6841 gagaaaactc ttgacttaaa aacttaactg tagtaaatat atctttttca ggtgatgaat
+     6901 tattttttta aaaaaggtta catataggaa ttctgcagta taatttggag gctattagtg
+     6961 ctatattaat ggaaattaat tattttttaa gtaagtccaa aaaataatct agaaagtaag
+     7021 tttccagagc aaatctgacc tagcatttgg tatgctaggc tctgcttttc atgattttga
+     7081 aataaatcat aattagactt aacaatatgg agaaaataaa cttgtatttt taagtgttct
+     7141 gttggcttat tttctgtttc atccaactca ataattctga taaataaatt tggttctagt
+     7201 ttggtgcttg aaaaaaaa
+//
+

@@ -1,0 +1,237 @@
+LOCUS       NM_000942                893 bp    mRNA    linear   PRI 09-APR-2026
+DEFINITION  Homo sapiens peptidylprolyl isomerase B (PPIB), mRNA.
+ACCESSION   NM_000942
+VERSION     NM_000942.5
+KEYWORDS    RefSeq; MANE Select.
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 893)
+  AUTHORS   Li,W., Peng,J., Yao,D., Rao,B., Xia,Y., Wang,Q., Li,S., Cao,M.,
+            Shen,Y., Ma,P., Liao,R., Qin,A., Zhao,J. and Cao,Y.
+  TITLE     The structural basis for the collagen processing by human
+            P3H1/CRTAP/PPIB ternary complex
+  JOURNAL   Nat Commun 15 (1), 7844 (2024)
+   PUBMED   39245686
+REFERENCE   2  (bases 1 to 893)
+  AUTHORS   Haenig,C., Atias,N., Taylor,A.K., Mazza,A., Schaefer,M.H., Russ,J.,
+            Riechers,S.P., Jain,S., Coughlin,M., Fontaine,J.F., Freibaum,B.D.,
+            Brusendorf,L., Zenkner,M., Porras,P., Stroedicke,M., Schnoegl,S.,
+            Arnsburg,K., Boeddrich,A., Pigazzini,L., Heutink,P., Taylor,J.P.,
+            Kirstein,J., Andrade-Navarro,M.A., Sharan,R. and Wanker,E.E.
+  TITLE     Interactome Mapping Provides a Network of Neurodegenerative Disease
+            Proteins and Uncovers Widespread Protein Aggregation in Affected
+            Brains
+  JOURNAL   Cell Rep 32 (7), 108050 (2020)
+   PUBMED   32814053
+REFERENCE   3  (bases 1 to 893)
+  AUTHORS   Sarro,E., Duran,M., Rico,A., Bou-Teen,D., Fernandez-Majada,V.,
+            Croatt,A.J., Nath,K.A., Salcedo,M.T., Gundelach,J.H., Batlle,D.,
+            Bram,R.J. and Meseguer,A.
+  TITLE     Cyclophilins A and B oppositely regulate renal tubular epithelial
+            cell phenotype
+  JOURNAL   J Mol Cell Biol 12 (7), 499-514 (2020)
+   PUBMED   32162654
+  REMARK    GeneRIF: Cyclophilins A and B oppositely regulate renal tubular
+            epithelial cell phenotype.
+REFERENCE   4  (bases 1 to 893)
+  AUTHORS   Luck,K., Kim,D.K., Lambourne,L., Spirohn,K., Begg,B.E., Bian,W.,
+            Brignall,R., Cafarelli,T., Campos-Laborie,F.J., Charloteaux,B.,
+            Choi,D., Cote,A.G., Daley,M., Deimling,S., Desbuleux,A., Dricot,A.,
+            Gebbia,M., Hardy,M.F., Kishore,N., Knapp,J.J., Kovacs,I.A.,
+            Lemmens,I., Mee,M.W., Mellor,J.C., Pollis,C., Pons,C.,
+            Richardson,A.D., Schlabach,S., Teeking,B., Yadav,A., Babor,M.,
+            Balcha,D., Basha,O., Bowman-Colin,C., Chin,S.F., Choi,S.G.,
+            Colabella,C., Coppin,G., D'Amata,C., De Ridder,D., De Rouck,S.,
+            Duran-Frigola,M., Ennajdaoui,H., Goebels,F., Goehring,L., Gopal,A.,
+            Haddad,G., Hatchi,E., Helmy,M., Jacob,Y., Kassa,Y., Landini,S.,
+            Li,R., van Lieshout,N., MacWilliams,A., Markey,D., Paulson,J.N.,
+            Rangarajan,S., Rasla,J., Rayhan,A., Rolland,T., San-Miguel,A.,
+            Shen,Y., Sheykhkarimli,D., Sheynkman,G.M., Simonovsky,E., Tasan,M.,
+            Tejeda,A., Tropepe,V., Twizere,J.C., Wang,Y., Weatheritt,R.J.,
+            Weile,J., Xia,Y., Yang,X., Yeger-Lotem,E., Zhong,Q., Aloy,P.,
+            Bader,G.D., De Las Rivas,J., Gaudet,S., Hao,T., Rak,J.,
+            Tavernier,J., Hill,D.E., Vidal,M., Roth,F.P. and Calderwood,M.A.
+  TITLE     A reference map of the human binary protein interactome
+  JOURNAL   Nature 580 (7803), 402-408 (2020)
+   PUBMED   32296183
+REFERENCE   5  (bases 1 to 893)
+  AUTHORS   Ma-Lauer,Y., Zheng,Y., Malesevic,M., von Brunn,B., Fischer,G. and
+            von Brunn,A.
+  TITLE     Influences of cyclosporin A and non-immunosuppressive derivatives
+            on cellular cyclophilins and viral nucleocapsid protein during
+            human coronavirus 229E replication
+  JOURNAL   Antiviral Res 173, 104620 (2020)
+   PUBMED   31634494
+  REMARK    GeneRIF: Influences of cyclosporin A and non-immunosuppressive
+            derivatives on cellular cyclophilins and viral nucleocapsid protein
+            during human coronavirus 229E replication.
+REFERENCE   6  (bases 1 to 893)
+  AUTHORS   Rasmussen,H.H., van Damme,J., Puype,M., Gesser,B., Celis,J.E. and
+            Vandekerckhove,J.
+  TITLE     Microsequences of 145 proteins recorded in the two-dimensional gel
+            protein database of normal human epidermal keratinocytes
+  JOURNAL   Electrophoresis 13 (12), 960-969 (1992)
+   PUBMED   1286667
+REFERENCE   7  (bases 1 to 893)
+  AUTHORS   Arber,S., Krause,K.H. and Caroni,P.
+  TITLE     s-cyclophilin is retained intracellularly via a unique
+            COOH-terminal sequence and colocalizes with the calcium storage
+            protein calreticulin
+  JOURNAL   J Cell Biol 116 (1), 113-125 (1992)
+   PUBMED   1530944
+REFERENCE   8  (bases 1 to 893)
+  AUTHORS   Peddada,L.B., McPherson,J.D., Law,R., Wasmuth,J.J., Youderian,P.
+            and Deans,R.J.
+  TITLE     Somatic cell mapping of the human cyclophilin B gene (PPIB) to
+            chromosome 15
+  JOURNAL   Cytogenet Cell Genet 60 (3-4), 219-221 (1992)
+   PUBMED   1505219
+REFERENCE   9  (bases 1 to 893)
+  AUTHORS   Hasel,K.W., Glass,J.R., Godbout,M. and Sutcliffe,J.G.
+  TITLE     An endoplasmic reticulum-specific cyclophilin
+  JOURNAL   Mol Cell Biol 11 (7), 3484-3491 (1991)
+   PUBMED   1710767
+REFERENCE   10 (bases 1 to 893)
+  AUTHORS   Price,E.R., Zydowsky,L.D., Jin,M.J., Baker,C.H., McKeon,F.D. and
+            Walsh,C.T.
+  TITLE     Human cyclophilin B: a second cyclophilin gene encodes a
+            peptidyl-prolyl isomerase with a signal sequence
+  JOURNAL   Proc Natl Acad Sci U S A 88 (5), 1903-1907 (1991)
+   PUBMED   2000394
+COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
+            reference sequence was derived from BC008848.2 and BC001125.2.
+            
+            On Dec 4, 2019 this sequence version replaced NM_000942.4.
+            
+            Summary: The protein encoded by this gene is a cyclosporine-binding
+            protein and is mainly located within the endoplasmic reticulum. It
+            is associated with the secretory pathway and released in biological
+            fluids. This protein can bind to cells derived from T- and
+            B-lymphocytes, and may regulate cyclosporine A-mediated
+            immunosuppression. Variants have been identified in this protein
+            that give rise to recessive forms of osteogenesis imperfecta.
+            [provided by RefSeq, Oct 2009].
+            
+            Publication Note:  This RefSeq record includes a subset of the
+            publications that are available for this gene. Please see the Gene
+            record to access additional publications.
+            
+            ##Evidence-Data-START##
+            Transcript exon combination :: BX421459.2, BQ276360.1 [ECO:0000332]
+            RNAseq introns              :: single sample supports all introns
+                                           SAMEA1968189, SAMEA1968540
+                                           [ECO:0000348]
+            ##Evidence-Data-END##
+            
+            ##RefSeq-Attributes-START##
+            MANE Ensembl match     :: ENST00000300026.4/ ENSP00000300026.4
+            RefSeq Select criteria :: based on single protein-coding transcript
+            ##RefSeq-Attributes-END##
+            COMPLETENESS: complete on the 3' end.
+PRIMARY     REFSEQ_SPAN         PRIMARY_IDENTIFIER PRIMARY_SPAN        COMP
+            1-749               BC008848.2         105-853
+            750-893             BC001125.2         732-875
+FEATURES             Location/Qualifiers
+     source          1..893
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /chromosome="15"
+                     /map="15q22.31"
+     gene            1..893
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /note="peptidylprolyl isomerase B"
+                     /db_xref="GeneID:5479"
+                     /db_xref="HGNC:HGNC:9255"
+                     /db_xref="MIM:123841"
+     exon            1..171
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /inference="alignment:Splign:2.1.0"
+     CDS             37..687
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /EC_number="5.2.1.8"
+                     /note="peptidyl-prolyl cis-trans isomerase B;
+                     peptidylprolyl isomerase B (cyclophilin B);
+                     cyclophilin-like protein; S-cyclophilin; PPIase B;
+                     rotamase B; epididymis secretory protein Li 39"
+                     /codon_start=1
+                     /product="peptidyl-prolyl cis-trans isomerase B precursor"
+                     /protein_id="NP_000933.1"
+                     /db_xref="CCDS:CCDS10191.1"
+                     /db_xref="GeneID:5479"
+                     /db_xref="HGNC:HGNC:9255"
+                     /db_xref="MIM:123841"
+                     /translation="MLRLSERNMKVLLAAALIAGSVFFLLLPGPSAADEKKKGPKVTV
+                     KVYFDLRIGDEDVGRVIFGLFGKTVPKTVDNFVALATGEKGFGYKNSKFHRVIKDFMI
+                     QGGDFTRGDGTGGKSIYGERFPDENFKLKHYGPGWVSMANAGKDTNGSQFFITTVKTA
+                     WLDGKHVVFGKVLEGMEVVRKVESTKTDSRDKPLKDVIIADCGKIEVEKPFAIAKE"
+     sig_peptide     37..111
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+     mat_peptide     112..684
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /product="peptidyl-prolyl cis-trans isomerase B"
+     misc_feature    478..480
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /note="N-linked (GlcNAc...) asparagine.
+                     /evidence=ECO:0000255; propagated from
+                     UniProtKB/Swiss-Prot (P23284.2); glycosylation site"
+     misc_feature    529..531
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /note="N6-acetyllysine.
+                     /evidence=ECO:0000250|UniProtKB:Q99KR7; propagated from
+                     UniProtKB/Swiss-Prot (P23284.2); acetylation site"
+     misc_feature    661..663
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /note="N6-acetyllysine, alternate.
+                     /evidence=ECO:0000250|UniProtKB:P24369; propagated from
+                     UniProtKB/Swiss-Prot (P23284.2); acetylation site"
+     misc_feature    673..684
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /note="propagated from UniProtKB/Swiss-Prot (P23284.2);
+                     Region: Prevents secretion from ER"
+     exon            172..285
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /inference="alignment:Splign:2.1.0"
+     exon            286..379
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /inference="alignment:Splign:2.1.0"
+     exon            380..564
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /inference="alignment:Splign:2.1.0"
+     exon            565..893
+                     /gene="PPIB"
+                     /gene_synonym="CYP-S1; CYPB; HEL-S-39; OI9; SCYLP"
+                     /inference="alignment:Splign:2.1.0"
+ORIGIN      
+        1 ctcagctgtc cgggctgctt tcgcctccgc ctgtggatgc tgcgcctctc cgaacgcaac
+       61 atgaaggtgc tccttgccgc cgccctcatc gcggggtccg tcttcttcct gctgctgccg
+      121 ggaccttctg cggccgatga gaagaagaag gggcccaaag tcaccgtcaa ggtgtatttt
+      181 gacctacgaa ttggagatga agatgtaggc cgggtgatct ttggtctctt cggaaagact
+      241 gttccaaaaa cagtggataa ttttgtggcc ttagctacag gagagaaagg atttggctac
+      301 aaaaacagca aattccatcg tgtaatcaag gacttcatga tccagggcgg agacttcacc
+      361 aggggagatg gcacaggagg aaagagcatc tacggtgagc gcttccccga tgagaacttc
+      421 aaactgaagc actacgggcc tggctgggtg agcatggcca acgcaggcaa agacaccaac
+      481 ggctcccagt tcttcatcac gacagtcaag acagcctggc tagatggcaa gcatgtggtg
+      541 tttggcaaag ttctagaggg catggaggtg gtgcggaagg tggagagcac caagacagac
+      601 agccgggata aacccctgaa ggatgtgatc atcgcagact gcggcaagat cgaggtggag
+      661 aagccctttg ccatcgccaa ggagtagggc acagggacat ctttctttga gtgaccgtct
+      721 gtgcaggccc tgtagtccgc cacagggctc tgagctgcac tggccccggt gctggcatct
+      781 ggtggagcgg acccactccc ctcacattcc acaggcccat ggactcactt ttgtaacaaa
+      841 ctcctaccaa cactgaccaa taaaaaaaaa tgtgggtttt ttttttttta ata
+//
+

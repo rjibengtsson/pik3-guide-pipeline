@@ -1,0 +1,470 @@
+LOCUS       NM_005026               5412 bp    mRNA    linear   PRI 06-SEP-2026
+DEFINITION  Homo sapiens phosphatidylinositol-4,5-bisphosphate 3-kinase
+            catalytic subunit delta (PIK3CD), transcript variant 1, mRNA.
+ACCESSION   NM_005026
+VERSION     NM_005026.5
+KEYWORDS    RefSeq; MANE Select.
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 5412)
+  AUTHORS   Schaffer,L.V., Hu,M., Qian,G., Moon,K.M., Pal,A., Soni,N.,
+            Latham,A.P., Pontano Vaites,L., Tsai,D., Mattson,N.M., Licon,K.,
+            Bachelder,R., Cesnik,A., Gaur,I., Le,T., Leineweber,W., Palar,A.,
+            Pulido,E., Qin,Y., Zhao,X., Churas,C., Lenkiewicz,J., Chen,J.,
+            Ono,K., Pratt,D., Zage,P., Echeverria,I., Sali,A., Harper,J.W.,
+            Gygi,S.P., Foster,L.J., Huttlin,E.L., Lundberg,E. and Ideker,T.
+  TITLE     Multimodal cell maps as a foundation for structural and functional
+            genomics
+  JOURNAL   Nature 642 (8066), 222-231 (2025)
+   PUBMED   40205054
+  REMARK    Erratum:[Nature. 2025 Oct;646(8086):E16. doi:
+            10.1038/s41586-025-09648-x. PMID: 41039152]
+REFERENCE   2  (bases 1 to 5412)
+  AUTHORS   Orellana,H., Yan,J., Paul,A., Tokita,M., Ding,Y., Ghosh,R.,
+            Lewis,K.L., Davis,J., Jamal,L., Jodarski,C., Similuk,M.,
+            Saucier,N., Zhu,Z., Wang,Y., Wu,S., Ruggieri,J., Su,H.C., Uzel,G.,
+            Nahas,S., Cooper,M. and Walkiewicz,M.A.
+  TITLE     Case report: Deep sequencing and long-read genome sequencing refine
+            prior genetic analyses in families with apparent gonadal mosaicism
+            in PIK3CD-related activated PI3K delta syndrome
+  JOURNAL   Front Immunol 15, 1451212 (2024)
+   PUBMED   39253077
+  REMARK    GeneRIF: Case report: Deep sequencing and long-read genome
+            sequencing refine prior genetic analyses in families with apparent
+            gonadal mosaicism in PIK3CD-related activated PI3K delta syndrome.
+REFERENCE   3  (bases 1 to 5412)
+  AUTHORS   Fu,X.L., He,F.T., Li,M.H., Fu,C.Y. and Chen,J.Z.
+  TITLE     circZNF532 promotes endothelial-to-mesenchymal transition in
+            diabetic retinopathy by recruiting TAF15 to stabilize PIK3CD
+  JOURNAL   Endocr J 71 (7), 675-686 (2024)
+   PUBMED   38811189
+  REMARK    GeneRIF: circZNF532 promotes endothelial-to-mesenchymal transition
+            in diabetic retinopathy by recruiting TAF15 to stabilize PIK3CD.
+REFERENCE   4  (bases 1 to 5412)
+  AUTHORS   Wang,J., Zhao,X., Wang,Q., Zheng,X., Simayi,D., Zhao,J., Yang,P.,
+            Mao,Q. and Xia,H.
+  TITLE     FAM76B regulates PI3K/Akt/NF-kappaB-mediated M1 macrophage
+            polarization by influencing the stability of PIK3CD mRNA
+  JOURNAL   Cell Mol Life Sci 81 (1), 107 (2024)
+   PUBMED   38421448
+  REMARK    GeneRIF: FAM76B regulates PI3K/Akt/NF-kappaB-mediated M1 macrophage
+            polarization by influencing the stability of PIK3CD mRNA.
+REFERENCE   5  (bases 1 to 5412)
+  AUTHORS   Li,Z., Liu,J., Wang,P., Zhang,B., He,G. and Yang,L.
+  TITLE     The novel miR-873-5p-YWHAE-PI3K/AKT axis is involved in non-small
+            cell lung cancer progression and chemoresistance by mediating
+            autophagy
+  JOURNAL   Funct Integr Genomics 24 (2), 33 (2024)
+   PUBMED   38363382
+  REMARK    GeneRIF: The novel miR-873-5p-YWHAE-PI3K/AKT axis is involved in
+            non-small cell lung cancer progression and chemoresistance by
+            mediating autophagy.
+REFERENCE   6  (bases 1 to 5412)
+  AUTHORS   Borgatti,P., Zauli,G., Colamussi,M.L., Gibellini,D., Previati,M.,
+            Cantley,L.L. and Capitani,S.
+  TITLE     Extracellular HIV-1 Tat protein activates phosphatidylinositol 3-
+            and Akt/PKB kinases in CD4+ T lymphoblastoid Jurkat cells
+  JOURNAL   Eur J Immunol 27 (11), 2805-2811 (1997)
+   PUBMED   9394803
+REFERENCE   7  (bases 1 to 5412)
+  AUTHORS   Chantry,D., Vojtek,A., Kashishian,A., Holtzman,D.A., Wood,C.,
+            Gray,P.W., Cooper,J.A. and Hoekstra,M.F.
+  TITLE     p110delta, a novel phosphatidylinositol 3-kinase catalytic subunit
+            that associates with p85 and is expressed predominantly in
+            leukocytes
+  JOURNAL   J Biol Chem 272 (31), 19236-19241 (1997)
+   PUBMED   9235916
+REFERENCE   8  (bases 1 to 5412)
+  AUTHORS   Vanhaesebroeck,B., Welham,M.J., Kotani,K., Stein,R., Warne,P.H.,
+            Zvelebil,M.J., Higashi,K., Volinia,S., Downward,J. and
+            Waterfield,M.D.
+  TITLE     P110delta, a novel phosphoinositide 3-kinase in leukocytes
+  JOURNAL   Proc Natl Acad Sci U S A 94 (9), 4330-4335 (1997)
+   PUBMED   9113989
+REFERENCE   9  (bases 1 to 5412)
+  AUTHORS   Milani,D., Mazzoni,M., Borgatti,P., Zauli,G., Cantley,L. and
+            Capitani,S.
+  TITLE     Extracellular human immunodeficiency virus type-1 Tat protein
+            activates phosphatidylinositol 3-kinase in PC12 neuronal cells
+  JOURNAL   J Biol Chem 271 (38), 22961-22964 (1996)
+   PUBMED   8798481
+REFERENCE   10 (bases 1 to 5412)
+  AUTHORS   Sacco,K. and Uzel,G.
+  TITLE     Activated PI3K Delta Syndrome
+  JOURNAL   (in) Adam MP, Bick S, Mirzaa GM, Wallace SE and Amemiya A (Eds.);
+            GENEREVIEWS(R);
+            (1993)
+   PUBMED   39899769
+COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
+            reference sequence was derived from AK314191.1, BC030263.1,
+            U86453.1, BC132919.1, Y10055.2, BC150297.1, W30913.1, CA427830.1
+            and AL691449.21.
+            
+            On May 17, 2019 this sequence version replaced NM_005026.4.
+            
+            Summary: Phosphoinositide 3-kinases (PI3Ks) phosphorylate inositol
+            lipids and are involved in the immune response. The protein encoded
+            by this gene is a class I PI3K found primarily in leukocytes. Like
+            other class I PI3Ks (p110-alpha p110-beta, and p110-gamma), the
+            encoded protein binds p85 adapter proteins and GTP-bound RAS.
+            However, unlike the other class I PI3Ks, this protein
+            phosphorylates itself, not p85 protein.[provided by RefSeq, Jul
+            2010].
+            
+            Publication Note:  This RefSeq record includes a subset of the
+            publications that are available for this gene. Please see the Gene
+            record to access additional publications.
+            
+            ##Evidence-Data-START##
+            Transcript exon combination :: SRR1803612.17736.1, AK314191.1
+                                           [ECO:0000332]
+            RNAseq introns              :: single sample supports all introns
+                                           SAMEA1965299, SAMEA1966682
+                                           [ECO:0000348]
+            ##Evidence-Data-END##
+            
+            ##RefSeq-Attributes-START##
+            MANE Ensembl match     :: ENST00000377346.9/ ENSP00000366563.4
+            RefSeq Select criteria :: based on conservation, expression,
+                                      longest protein
+            ##RefSeq-Attributes-END##
+            COMPLETENESS: complete on the 3' end.
+PRIMARY     REFSEQ_SPAN         PRIMARY_IDENTIFIER PRIMARY_SPAN        COMP
+            1-55                AK314191.1         1-55
+            56-72               BC030263.1         27-43
+            73-966              U86453.1           59-952
+            967-3747            BC132919.1         880-3660
+            3748-3881           Y10055.2           3735-3868
+            3882-4120           U86453.1           3868-4106
+            4121-5214           BC150297.1         4068-5161
+            5215-5217           U86453.1           5206-5208
+            5218-5218           W30913.1           272-272
+            5219-5223           CA427830.1         10-14               c
+            5224-5412           AL691449.21        95727-95915
+FEATURES             Location/Qualifiers
+     source          1..5412
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /chromosome="1"
+                     /map="1p36.22"
+     gene            1..5412
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /note="phosphatidylinositol-4,5-bisphosphate 3-kinase
+                     catalytic subunit delta"
+                     /db_xref="GeneID:5293"
+                     /db_xref="HGNC:HGNC:8977"
+                     /db_xref="MIM:602839"
+     exon            1..72
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            73..177
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            178..350
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     misc_feature    198..200
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /note="upstream in-frame stop codon"
+     CDS             210..3344
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /EC_number="2.7.1.137"
+                     /EC_number="2.7.1.153"
+                     /note="isoform 1 is encoded by transcript variant 1;
+                     PI3-kinase p110 subunit delta; phosphoinositide-3-kinase
+                     C; ptdIns-3-kinase subunit p110-delta;
+                     phosphatidylinositol-4,5-bisphosphate 3-kinase 110 kDa
+                     catalytic subunit delta; phosphoinositide-3-kinase,
+                     catalytic, delta polypeptide variant p37delta;
+                     phosphatidylinositol-4,5-bisphosphate 3-kinase catalytic
+                     subunit delta short variant 8/20"
+                     /codon_start=1
+                     /product="phosphatidylinositol 4,5-bisphosphate 3-kinase
+                     catalytic subunit delta isoform isoform 1"
+                     /protein_id="NP_005017.3"
+                     /db_xref="CCDS:CCDS104.1"
+                     /db_xref="GeneID:5293"
+                     /db_xref="HGNC:HGNC:8977"
+                     /db_xref="MIM:602839"
+                     /translation="MPPGVDCPMEFWTKEENQSVVVDFLLPTGVYLNFPVSRNANLST
+                     IKQLLWHRAQYEPLFHMLSGPEAYVFTCINQTAEQQELEDEQRRLCDVQPFLPVLRLV
+                     AREGDRVKKLINSQISLLIGKGLHEFDSLCDPEVNDFRAKMCQFCEEAAARRQQLGWE
+                     AWLQYSFPLQLEPSAQTWGPGTLRLPNRALLVNVKFEGSEESFTFQVSTKDVPLALMA
+                     CALRKKATVFRQPLVEQPEDYTLQVNGRHEYLYGSYPLCQFQYICSCLHSGLTPHLTM
+                     VHSSSILAMRDEQSNPAPQVQKPRAKPPPIPAKKPSSVSLWSLEQPFRIELIQGSKVN
+                     ADERMKLVVQAGLFHGNEMLCKTVSSSEVSVCSEPVWKQRLEFDINICDLPRMARLCF
+                     ALYAVIEKAKKARSTKKKSKKADCPIAWANLMLFDYKDQLKTGERCLYMWPSVPDEKG
+                     ELLNPTGTVRSNPNTDSAAALLICLPEVAPHPVYYPALEKILELGRHSECVHVTEEEQ
+                     LQLREILERRGSGELYEHEKDLVWKLRHEVQEHFPEALARLLLVTKWNKHEDVAQMLY
+                     LLCSWPELPVLSALELLDFSFPDCHVGSFAIKSLRKLTDDELFQYLLQLVQVLKYESY
+                     LDCELTKFLLDRALANRKIGHFLFWHLRSEMHVPSVALRFGLILEAYCRGSTHHMKVL
+                     MKQGEALSKLKALNDFVKLSSQKTPKPQTKELMHLCMRQEAYLEALSHLQSPLDPSTL
+                     LAEVCVEQCTFMDSKMKPLWIMYSNEEAGSGGSVGIIFKNGDDLRQDMLTLQMIQLMD
+                     VLWKQEGLDLRMTPYGCLPTGDRTGLIEVVLRSDTIANIQLNKSNMAATAAFNKDALL
+                     NWLKSKNPGEALDRAIEEFTLSCAGYCVATYVLGIGDRHSDNIMIRESGQLFHIDFGH
+                     FLGNFKTKFGINRERVPFILTYDFVHVIQQGKTNNSEKFERFRGYCERAYTILRRHGL
+                     LFLHLFALMRAAGLPELSCSKDIQYLKDSLALGKTEEEALKHFRVKFNEALRESWKTK
+                     VNWLAHNVSKDNRQ"
+     misc_feature    1068..1145
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /note="propagated from UniProtKB/Swiss-Prot (O00329.2);
+                     Region: Disordered. /evidence=ECO:0000256|SAM:MobiDB-lite"
+     misc_feature    1779..1781
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /note="Phosphotyrosine.
+                     /evidence=ECO:0007744|PubMed:19369195; propagated from
+                     UniProtKB/Swiss-Prot (O00329.2); phosphorylation site"
+     misc_feature    2460..2480
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /note="propagated from UniProtKB/Swiss-Prot (O00329.2);
+                     Region: G-loop.
+                     /evidence=ECO:0000255|PROSITE-ProRule:PRU00269"
+     misc_feature    2877..2903
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /note="propagated from UniProtKB/Swiss-Prot (O00329.2);
+                     Region: Catalytic loop.
+                     /evidence=ECO:0000255|PROSITE-ProRule:PRU00269"
+     misc_feature    2934..3014
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /note="propagated from UniProtKB/Swiss-Prot (O00329.2);
+                     Region: Activation loop.
+                     /evidence=ECO:0000255|PROSITE-ProRule:PRU00269"
+     misc_feature    3324..3326
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /note="Phosphoserine, by autocatalysis.
+                     /evidence=ECO:0000269|PubMed:10064595,
+                     ECO:0007744|PubMed:19369195, ECO:0007744|PubMed:23186163;
+                     propagated from UniProtKB/Swiss-Prot (O00329.2);
+                     phosphorylation site"
+     exon            351..579
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            580..809
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            810..989
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            990..1139
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1140..1229
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1230..1451
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1452..1548
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1549..1679
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1680..1730
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1731..1898
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1899..2020
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2021..2164
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2165..2264
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2265..2443
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2444..2556
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2557..2635
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2636..2803
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2804..2927
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2928..3073
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            3074..3206
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     exon            3207..5412
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /inference="alignment:Splign:2.1.0"
+     polyA_site      5208
+                     /gene="PIK3CD"
+                     /gene_synonym="APDS; IMD14; IMD14A; IMD14B; p110D;
+                     P110DELTA; PI3K; PI3Kdelta; ROCHIS"
+                     /note="major polyA site"
+ORIGIN      
+        1 actcgcgccc agcgcagtcg ctccgagcgg ccgcgagcag agccgcccag ccctgccagc
+       61 tgcgccggga cgataaggag tcaggccagg gcgggatgac actcattgat tctaaagcat
+      121 ctttaatctg ccaggcggag ggggctttgc tggtctttct tggactattc cagagaggac
+      181 aactgtcatc tgggaagtaa caacgcagga tgccccctgg ggtggactgc cccatggaat
+      241 tctggaccaa ggaggagaat cagagcgttg tggttgactt cctgctgccc acaggggtct
+      301 acctgaactt ccctgtgtcc cgcaatgcca acctcagcac catcaagcag ctgctgtggc
+      361 accgcgccca gtatgagccg ctcttccaca tgctcagtgg ccccgaggcc tatgtgttca
+      421 cctgcatcaa ccagacagcg gagcagcaag agctggagga cgagcaacgg cgtctgtgtg
+      481 acgtgcagcc cttcctgccc gtcctgcgcc tggtggcccg tgagggcgac cgcgtgaaga
+      541 agctcatcaa ctcacagatc agcctcctca tcggcaaagg cctccacgag tttgactcct
+      601 tgtgcgaccc agaagtgaac gactttcgcg ccaagatgtg ccaattctgc gaggaggcgg
+      661 ccgcccgccg gcagcagctg ggctgggagg cctggctgca gtacagtttc cccctgcagc
+      721 tggagccctc ggctcaaacc tgggggcctg gtaccctgcg gctcccgaac cgggcccttc
+      781 tggtcaacgt taagtttgag ggcagcgagg agagcttcac cttccaggtg tccaccaagg
+      841 acgtgccgct ggcgctgatg gcctgtgccc tgcggaagaa ggccacagtg ttccggcagc
+      901 cgctggtgga gcagccggaa gactacacgc tgcaggtgaa cggcaggcat gagtacctgt
+      961 atggcagcta cccgctctgc cagttccagt acatctgcag ctgcctgcac agtgggttga
+     1021 cccctcacct gaccatggtc cattcctcct ccatcctcgc catgcgggat gagcagagca
+     1081 accctgcccc ccaggtccag aaaccgcgtg ccaaaccacc tcccattcct gcgaagaagc
+     1141 cttcctctgt gtccctgtgg tccctggagc agccgttccg catcgagctc atccagggca
+     1201 gcaaagtgaa cgccgacgag cggatgaagc tggtggtgca ggccgggctt ttccacggca
+     1261 acgagatgct gtgcaagacg gtgtccagct cggaggtgag cgtgtgctcg gagcccgtgt
+     1321 ggaagcagcg gctggagttc gacatcaaca tctgcgacct gccccgcatg gcccgtctct
+     1381 gctttgcgct gtacgccgtg atcgagaaag ccaagaaggc tcgctccacc aagaagaagt
+     1441 ccaagaaggc ggactgcccc attgcctggg ccaacctcat gctgtttgac tacaaggacc
+     1501 agcttaagac cggggaacgc tgcctctaca tgtggccctc cgtcccagat gagaagggcg
+     1561 agctgctgaa ccccacgggc actgtgcgca gtaaccccaa cacggatagc gccgctgccc
+     1621 tgctcatctg cctgcccgag gtggccccgc accccgtgta ctaccccgcc ctggagaaga
+     1681 tcttggagct ggggcgacac agcgagtgtg tgcatgtcac cgaggaggag cagctgcagc
+     1741 tgcgggaaat cctggagcgg cgggggtctg gggagctgta tgagcacgag aaggacctgg
+     1801 tgtggaagct gcggcatgaa gtccaggagc acttcccgga ggcgctagcc cggctgctgc
+     1861 tggtcaccaa gtggaacaag catgaggatg tggcccagat gctctacctg ctgtgctcct
+     1921 ggccggagct gcccgtcctg agcgccctgg agctgctaga cttcagcttc cccgattgcc
+     1981 acgtaggctc cttcgccatc aagtcgctgc ggaaactgac ggacgatgag ctgttccagt
+     2041 acctgctgca gctggtgcag gtgctcaagt acgagtccta cctggactgc gagctgacca
+     2101 aattcctgct ggaccgggcc ctggccaacc gcaagatcgg ccacttcctt ttctggcacc
+     2161 tccgctccga gatgcacgtg ccgtcggtgg ccctgcgctt cggcctcatc ctggaggcct
+     2221 actgcagggg cagcacccac cacatgaagg tgctgatgaa gcagggggaa gcactgagca
+     2281 aactgaaggc cctgaatgac ttcgtcaagc tgagctctca gaagaccccc aagccccaga
+     2341 ccaaggagct gatgcacttg tgcatgcggc aggaggccta cctagaggcc ctctcccacc
+     2401 tgcagtcccc actcgacccc agcaccctgc tggctgaagt ctgcgtggag cagtgcacct
+     2461 tcatggactc caagatgaag cccctgtgga tcatgtacag caacgaggag gcaggcagcg
+     2521 gcggcagcgt gggcatcatc tttaagaacg gggatgacct ccggcaggac atgctgaccc
+     2581 tgcagatgat ccagctcatg gacgtcctgt ggaagcagga ggggctggac ctgaggatga
+     2641 ccccctatgg ctgcctcccc accggggacc gcacaggcct cattgaggtg gtactccgtt
+     2701 cagacaccat cgccaacatc caactcaaca agagcaacat ggcagccaca gccgccttca
+     2761 acaaggatgc cctgctcaac tggctgaagt ccaagaaccc gggggaggcc ctggatcgag
+     2821 ccattgagga gttcaccctc tcctgtgctg gctattgtgt ggccacatat gtgctgggca
+     2881 ttggcgatcg gcacagcgac aacatcatga tccgagagag tgggcagctg ttccacattg
+     2941 attttggcca ctttctgggg aatttcaaga ccaagtttgg aatcaaccgc gagcgtgtcc
+     3001 cattcatcct cacctacgac tttgtccatg tgattcagca ggggaagact aataatagtg
+     3061 agaaatttga acggttccgg ggctactgtg aaagggccta caccatcctg cggcgccacg
+     3121 ggcttctctt cctccacctc tttgccctga tgcgggcggc aggcctgcct gagctcagct
+     3181 gctccaaaga catccagtat ctcaaggact ccctggcact ggggaaaaca gaggaggagg
+     3241 cactgaagca cttccgagtg aagtttaacg aagccctccg tgagagctgg aaaaccaaag
+     3301 tgaactggct ggcccacaac gtgtccaaag acaacaggca gtagtggctc ctcccagccc
+     3361 tgggcccaag aggaggcggc tgcgggtcgt ggggaccaag cacattggtc ctaaaggggc
+     3421 tgaagagcct gaactgcacc taacgggaaa gaaccgacat ggctgccttt tgtttacact
+     3481 ggttatttat ttatgacttg aaatagttta aggagctaaa cagccataaa cggaaacgcc
+     3541 tccttcatgc agcggcggtg ctgggccccc cgaggctgca cctggctctc ggctgaggat
+     3601 tgtcacccca agtcttccag ctggtggatc tgggcccagc aaagactgtt ctcctcccga
+     3661 gggaaccttc ttcccaggcc tcccgccaga ctgcctgggt cctggcgcct ggcggtcacc
+     3721 tggtgcctac tgtccgacag gatgccttga tcctcgtgcg acccaccctg tgtatcctcc
+     3781 ctagactgag ttctggcagc tccccgaggc agccggggta ccctctagat tcagggatgc
+     3841 ttgctctcca cttttcaagt gggtcttggg tacgagaatt ccctcatctt tctctactgt
+     3901 aaagtgattt tgtttgcagg taagaaaata atagatgact caccacacct ctacggctgg
+     3961 ggagatcagg cccagcccca taaaggagaa tctacgctgg tcctcaggac gtgttaaaga
+     4021 gatctgggcc tcatgtagct caccccggtc acgcatgaag gcaaaagcag gtcagaagcg
+     4081 aatactctgc cattatctca aaaatctttt tttttttttt gagatggggt cttcctctgt
+     4141 tgcccaggct ggagtgcagt ggtgcaatct tggctcactg taacctccgc ctcccaggtt
+     4201 caagtgattc ttctgcctca gcctcctgag tagctgggat tacaggtgtg caccaccgta
+     4261 cccagctaat ttttgtattt tagtagagac gggggtttca ccatgttggc tgggctggtc
+     4321 tcgaactcct gacctcaggt gatccacccg cctgagcctc ccaaagtgct gggattacag
+     4381 gcatgagcca ccgcgcccgg cccactctgc cattgtctaa gccacctctg aaagcaggtt
+     4441 ttaacaaaag gatgaggcca gaactcttcc agaaccatca cctttgggaa cctgctgtga
+     4501 gagtgctgag gtaccagaag tgtgagaacg agggggcgtg ctgggatctt tctctctgac
+     4561 tatacttagt ttgaaatggt gcaggcttag tcttaagcct ccaaaggcct ggatttgagc
+     4621 agctttagaa atgcaggttc tagggcttct cccagccttc agaagccaac taactctgca
+     4681 gatggggcta ggactgtggg cttttagcag cccacaggtg atcctaacat atcaggccat
+     4741 ggactcagga cctgcccggt gatgctgttg atttctcaaa ggtcttccaa aactcaacag
+     4801 agccagaagt agccgcccgc tcagcggctc aggtgccagc tctgttctga ttcaccaggg
+     4861 gtccgtcagt agtcattgcc acccgcgggg cacctccctg gccacacgcc tgttcccagc
+     4921 aagtgctgaa actcactaga ccgtctgcct gtttcgaaat ggggaaagcc gtgcgtgcgc
+     4981 gttatttatt taagtgcgcc tgtgtgcgcg ggtgtgggag cacactttgc aaagccacag
+     5041 cgtttctggt tttgggtgta cagtcttgtg tgcctggcga gaagaatatt ttctattttt
+     5101 ttaagtcatt tcatgtttct gtctggggaa ggcaagttag ttaagtatca ctgatgtggg
+     5161 ttgagaccag cactctgtga aaccttgaaa tgagaagtaa aggcagatga aaagaaagaa
+     5221 aaagcctttt tatgttcttt tatgttctcg gctcaaaaag aaacaaggga gtgtaggttt
+     5281 aaaaccaaaa caggagagaa gacaaacccc gctccggctg gagttagtta gaaccagaac
+     5341 tttattgtag cggatacact ttctgaccta tcatgagtat acacatctgc gaagggaaac
+     5401 cgcgcggcga ca
+//
+
