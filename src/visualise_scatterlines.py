@@ -22,10 +22,13 @@ summary live there.
 from __future__ import annotations
 
 import sys
-from typing import Iterable, NamedTuple
+from typing import Iterable, NamedTuple, Sequence
 
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+from annotation import Cds, Exon
 
 
 SURFACE = "#fcfcfb"      # plot background, and the ring that separates stacked points
@@ -35,16 +38,57 @@ LINE = "#d9d8d3"         # the score profile joining the points, kept recessive
 SIRNA_BAND = "#d6453f"   # the siRNA footprint, light red at low opacity
 OVERLAP_RING = "#2f2e2c" # the highlight on guides overlapping an siRNA
 
-# Marker fill, by predicted efficacy: green at 0, yellow at 1. Lightness rises
-# with the score, so the best guides are also the brightest points. It stops at
-# a saturated yellow rather than running to near-white, which would make the
-# highest-scoring guides -- the ones worth finding -- vanish into SURFACE.
-EFFICACY_SCALE = [
-    [0.0, "#14532d"],
-    [0.35, "#2f8a4a"],
-    [0.70, "#8ac926"],
-    [1.0, "#f4d03f"],
-]
+# The annotation lanes, all one light grey. On an mRNA the exons abut, so a
+# single row of one fill would draw an unbroken bar from base 1 to the end of
+# the transcript with no boundary visible anywhere. The exons are therefore
+# split across **two** rows by parity -- odd above, even below -- which makes
+# every junction a vertical step between the rows. The offset does the work a
+# colour change would otherwise have to do, so both rows can be the same grey.
+EXON_FILL = "#b9b7b1"
+CDS_FILL = "#6f6d68"     # darker, so the CDS reads as a different kind of feature
+LANE_EDGE = SURFACE      # hairline in the background colour, around each bar
+
+# Lane geometry, as fractions of the figure height. The lanes are deliberately
+# thin: they are a positional reference for the scatter below, not the subject
+# of the figure.
+#
+# The gaps are set per boundary rather than by `make_subplots`' uniform
+# `vertical_spacing`, which cannot do what is wanted here: the two exon rows are
+# one track split in two and should read as a pair, so they are separated by a
+# hairline, while the scatter below needs a real gap to read as a different
+# panel. One spacing value would have to compromise between the two.
+EXON_LANE_HEIGHT = 0.022
+CDS_LANE_HEIGHT = 0.022
+EXON_LANE_GAP = 0.004    # between the two exon rows: just enough to see the step
+LANE_GAP = 0.022         # between tracks, and above the scatter
+
+# Marker fill, by whether a guide is worth looking at rather than by its score.
+#
+# A continuous scale over the efficacy was replaced by these three states
+# deliberately: the score distribution is top-heavy -- 79% of guides exceed 0.7
+# -- so a gradient spends most of its range on distinctions that do not change
+# a decision, while the threshold does. The exact score is still in the hover.
+#
+# Orange is a **refinement of yellow, not a competitor**: a guide is orange only
+# if it clears the threshold *and* begins with GG, so the orange points are
+# always a subset of the ones worth considering. A GG guide below the threshold
+# stays grey, because its GG start is no use if the guide itself is poor.
+BELOW_FILL = "#b0aea8"   # below threshold: present, recessive, not competing
+ABOVE_FILL = "#f4d03f"   # above threshold
+GG_FILL = "#e8833a"      # above threshold and starting with GG
+
+HIGHLIGHT_LABELS = {
+    "below": "Below threshold",
+    "above": "Above threshold",
+    "gg": "Above threshold, GG start",
+}
+HIGHLIGHT_FILLS = {"below": BELOW_FILL, "above": ABOVE_FILL, "gg": GG_FILL}
+
+#: Only a default -- the caller is expected to set this. 0.9 rather than
+#: something lower because the distribution is top-heavy: at 0.7 nearly four
+#: guides in five clear the bar, which highlights almost the whole transcript
+#: and so highlights nothing.
+DEFAULT_THRESHOLD = 0.9
 
 
 # label, outline colour, marker symbol. Every guide is a circle, so position
@@ -188,6 +232,23 @@ def build_guides(
     return guides
 
 
+def highlight_category(guide: PsPCas13bGuide, threshold: float) -> str:
+    """``below``, ``above`` or ``gg`` -- which of the three fills a guide gets.
+
+    The threshold is **strict**: a guide exactly on it counts as below, so
+    "above 0.9" never includes 0.9 itself.
+
+    ``gg`` requires both conditions, so it is a subset of the above-threshold
+    guides rather than a third, competing state -- a GG start is a property of
+    how easily the guide can be transcribed, which is only worth seeing on a
+    guide that is otherwise worth using. The spacer is RNA, but G is G in both
+    alphabets, so no transcription step is needed to test it.
+    """
+    if guide.score <= threshold:
+        return "below"
+    return "gg" if guide.sequence.upper().startswith("GG") else "above"
+
+
 def transcript_lengths(df: pd.DataFrame) -> dict[str, int]:
     """Transcript length from the *unfiltered* tiling.
 
@@ -205,9 +266,17 @@ def plot_scatterlines(
     lengths: dict[str, int],
     output: str,
     inline_plotlyjs: bool = True,
+    exons: Sequence[Exon] = (),
+    cds: Cds | None = None,
+    threshold: float = DEFAULT_THRESHOLD,
 ) -> str | None:
     """One transcript per plot: the score profile with the siRNA bands on it.
 
+    `exons` and `cds` are optional. Each one present adds a thin lane above the
+    scatter, sharing its x-axis so a feature sits directly over the guides that
+    target it -- the lanes are a positional reference, not the subject. Passing
+    neither gives a single-panel figure, as this function gave before the lanes
+    existed.
     """
     # Every record, not one per guide: `build_guides` emits a guide once per
     # siRNA on its transcript, so a guide on a transcript with three siRNAs
@@ -234,12 +303,46 @@ def plot_scatterlines(
                 "sequence": g.sequence,
                 "sirna": g.sirna.qseqid if g.sirna else "-",
                 "distance": g.distance if g.distance is not None else "-",
+                "highlight": highlight_category(g, threshold),
             }
             for g in guides
         ]
     )
 
-    fig = go.Figure()
+    # One row per annotation lane, then the scatter, sharing a single x-axis so
+    # the lanes and the guides cannot drift apart under zoom or panning. The
+    # scatter keeps whatever height the lanes leave it.
+    # The lane rows, top to bottom: the odd exons, the even exons, then the CDS.
+    # Splitting the exons by parity is what makes their boundaries visible --
+    # see EXON_FILL above.
+    lane_specs: list[tuple[str, Sequence[Exon] | None]] = []
+    if exons:
+        lane_specs.append(("exons", [e for e in exons if e.index % 2]))
+        lane_specs.append(("exons", [e for e in exons if not e.index % 2]))
+    if cds is not None:
+        lane_specs.append(("CDS", None))
+
+    scatter_row = len(lane_specs) + 1
+
+    # Each row's vertical extent, top down, in paper units. Computed here and
+    # applied to the axes below, because the gap above a row depends on what
+    # that row and the one before it are -- see LANE_GAP above.
+    lane_domains: list[tuple[float, float]] = []
+    top = 1.0
+    for index, (label, _) in enumerate(lane_specs):
+        height = EXON_LANE_HEIGHT if label == "exons" else CDS_LANE_HEIGHT
+        lane_domains.append((top - height, top))
+        following = lane_specs[index + 1][0] if index + 1 < len(lane_specs) else None
+        top -= height + (EXON_LANE_GAP if label == following == "exons" else LANE_GAP)
+    scatter_domain = (0.0, top)
+
+    fig = make_subplots(
+        rows=scatter_row,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0,   # every domain is set explicitly below
+    )
+
     # The profile first and in one piece: colouring it by class would break it
     # into disconnected segments, and it is the points that carry the class.
     fig.add_trace(go.Scattergl(
@@ -249,7 +352,7 @@ def plot_scatterlines(
         hoverinfo="skip",       # the markers' own hover covers every point
         showlegend=False,
         name="score profile",
-    ))
+    ), row=scatter_row, col=1)
 
     # One trace per class, in CLASS_STYLE order rather than the order the
     # classes happen to appear in, so the legend reads the same on every plot
@@ -267,12 +370,13 @@ def plot_scatterlines(
             mode="markers",
             name=label,
             legendgroup=label,
+            legendgrouptitle_text="Position vs nearest siRNA",
             showlegend=label not in shown,
             marker=dict(
-                # Fill is the score, on one shared coloraxis so every trace
-                # and every plot reads against the same colourbar.
-                color=points["score"],
-                coloraxis="coloraxis",
+                # Fill is the highlight state, per point -- not a coloraxis.
+                # Drawing order still comes from CLASS_STYLE, so an overlapping
+                # guide stays on top of its own plain copies whatever its fill.
+                color=[HIGHLIGHT_FILLS[state] for state in points["highlight"]],
                 symbol=symbol,
                 # The overlaps are bigger as well as ringed: a contrasting
                 # outline alone is easy to lose among 21,000 plain points.
@@ -294,8 +398,39 @@ def plot_scatterlines(
                 # Ends marked: every sequence in this pipeline is 5' -> 3'.
                 "5'-%{customdata[2]}-3'<extra></extra>"
             ),
-        ))
+        ), row=scatter_row, col=1)
         shown.add(label)
+
+    # Counts for the legend and subtitle are over **distinct guides**, not over
+    # the rows plotted. `build_guides` emits a guide once per siRNA, so on a
+    # transcript with three siRNAs every guide is drawn three times and a count
+    # of plotted rows would treble -- reporting "3,870 above threshold" for
+    # 1,290 guides, which no other output in this pipeline would agree with.
+    # The points still stack; only the arithmetic is deduplicated.
+    counts = df.drop_duplicates("tile_id")["highlight"].value_counts()
+    n_guides = int(counts.sum())
+
+    # The fill legend, as entries with no points: the fills vary *within* each
+    # class trace, so no real trace can stand for one. Only the states actually
+    # present are listed, and in a fixed order, so a plot with no GG guide
+    # above the threshold says so by omission rather than showing a key to a
+    # colour that never appears.
+    present = set(df["highlight"])
+    for state in ("below", "above", "gg"):
+        if state not in present:
+            continue
+        fig.add_trace(go.Scattergl(
+            x=[None], y=[None],
+            mode="markers",
+            name=f"{HIGHLIGHT_LABELS[state]} ({int(counts.get(state, 0)):,})",
+            legendgroup="fill",
+            legendgrouptitle_text=f"Fill (threshold {threshold:g})",
+            marker=dict(
+                color=HIGHLIGHT_FILLS[state], size=9,
+                line=dict(color=SURFACE, width=0.6),
+            ),
+            hoverinfo="skip",
+        ), row=scatter_row, col=1)
 
     # One band per siRNA. Light red, and the only hue in the figure besides the
     # overlap points it explains, so a band reads as the siRNA footprint rather
@@ -310,48 +445,126 @@ def plot_scatterlines(
             annotation_text=sirna.qseqid,
             annotation_position="top left",
             annotation_font_color=INK,
+            row=scatter_row, col=1,
         )
+
+    # The lanes, drawn as horizontal bars on a one-category axis so each
+    # feature keeps its own hover: a shape would be silent, and the exon number
+    # is most of the point of having the lane.
+    for row, (label, features) in enumerate(lane_specs, start=1):
+        if label == "CDS":
+            fig.add_trace(go.Bar(
+                x=[cds.length],
+                base=[cds.start - 0.5],
+                y=[label],
+                orientation="h",
+                marker=dict(color=CDS_FILL, line=dict(width=0)),
+                showlegend=False,
+                customdata=[(cds.start, cds.end, cds.length)],
+                hovertemplate=(
+                    "<b>CDS</b><br>"
+                    "%{customdata[0]:,d}-%{customdata[1]:,d}<br>"
+                    "%{customdata[2]:,d} nt<extra></extra>"
+                ),
+            ), row=row, col=1)
+            continue
+
+        # An exon row can legitimately be empty -- a transcript with a single
+        # exon leaves the even row with nothing in it -- and an empty Bar is
+        # fine: the row still reserves its height, so the lanes stay aligned.
+        fig.add_trace(go.Bar(
+            x=[exon.length for exon in features],
+            # `base` is where each bar starts; x is its width. Half a base is
+            # subtracted so a bar covers whole bases rather than centres, as
+            # the siRNA bands do.
+            base=[exon.start - 0.5 for exon in features],
+            y=[label] * len(features),
+            orientation="h",
+            marker=dict(color=EXON_FILL, line=dict(color=LANE_EDGE, width=1)),
+            showlegend=False,
+            customdata=[(e.index, e.start, e.end, e.length) for e in features],
+            hovertemplate=(
+                "<b>exon %{customdata[0]}</b><br>"
+                "%{customdata[1]:,d}-%{customdata[2]:,d}<br>"
+                "%{customdata[3]:,d} nt<extra></extra>"
+            ),
+        ), row=row, col=1)
 
     fig.update_layout(
         title=(
-            f"PsPCas13b guide efficacy along {transcript} "
-            f"({len(sirnas)} siRNA site{'' if len(sirnas) == 1 else 's'})"
+            f"PsPCas13b guide efficacy along {transcript}"
+            # The siRNA and exon counts that used to sit in brackets here are
+            # still on the plot: the siRNAs in the legend and as labelled
+            # bands, the exons in the lanes and their hover. The run summary
+            # prints both.
+            f"<br><span style='font-size:11px'>"
+            f"{n_guides - int(counts.get('below', 0)):,} of {n_guides:,} "
+            f"guides above {threshold:g}, of which "
+            f"{int(counts.get('gg', 0)):,} start with GG</span>"
         ),
-        xaxis_title="Position",
-        yaxis_title="Predicted efficacy",
-        legend_title_text="Position vs nearest siRNA",
-        # Pinned to 0-1 rather than to the data: efficacy is a probability, and
-        # a per-plot range would give the same colour different meanings on
-        # each transcript, so two plots could not be compared.
-        coloraxis=dict(
-            colorscale=EFFICACY_SCALE,
-            cmin=0.0,
-            cmax=1.0,
-            colorbar=dict(
-                title="Predicted<br>efficacy",
-                tickformat=".1f",
-                thickness=14,
-                len=0.5,
-                yanchor="bottom",
-                y=0,
-            ),
-        ),
+        # The lane bars are the full height of their lane. Without this they
+        # would be drawn at a bar chart's default 80%, leaving a gap that reads
+        # as if the annotation stopped short.
+        bargap=0,
         plot_bgcolor=SURFACE,
         paper_bgcolor=SURFACE,
         font=dict(color=INK),
         hovermode="closest",
     )
-    fig.update_yaxes(gridcolor=GRID, zeroline=False)
     # Transcript coordinates, so show them in full: Plotly's default SI
     # formatting turns 2724 into "2.7k", which is useless for finding a guide.
+    #
+    # Applied to every row, and the range in particular: the lanes share the
+    # scatter's x-axis, but `shared_xaxes` only links the *interaction*, so
+    # without an explicit range on each row a lane could be autoscaled to its
+    # own features and a feature would then sit over the wrong guides.
+    axis_range = [0.5, lengths.get(transcript, max(df["end"])) + 0.5]
     fig.update_xaxes(
         tickformat=",d",    # tick labels: 2,724
         hoverformat=",d",   # the x value in the hover box, likewise
-        gridcolor=GRID,
         # Always the whole transcript, never just the span the guides occupy:
         # uncovered regions must read as genuinely uncovered.
-        range=[0.5, lengths.get(transcript, max(df["end"])) + 0.5],
+        range=axis_range,
     )
+    fig.update_xaxes(gridcolor=GRID, row=scatter_row, col=1)
+    fig.update_xaxes(title_text="Position", row=scatter_row, col=1)
+
+    fig.update_yaxes(
+        gridcolor=GRID, zeroline=False,
+        title_text="Predicted efficacy",
+        row=scatter_row, col=1,
+    )
+    # No grid and no zero line on a lane: a gridline across a one-category axis
+    # reads as a feature boundary. Each lane's domain is set here rather than
+    # left to `vertical_spacing`.
+    for index, (label, _) in enumerate(lane_specs, start=1):
+        fig.update_yaxes(
+            showgrid=False, zeroline=False, ticks="",
+            domain=list(lane_domains[index - 1]),
+            # The two exon rows are one track, so they get one label, placed
+            # between them as an annotation below. Letting each row draw its
+            # own tick would print "exons" twice, and at this lane height the
+            # two would collide -- and reading them as two different tracks is
+            # exactly the wrong conclusion.
+            showticklabels=label != "exons",
+            row=index, col=1,
+        )
+    fig.update_yaxes(domain=list(scatter_domain), row=scatter_row, col=1)
+
+    # The single label for the exon pair, centred on the two rows it spans.
+    if exons:
+        exon_domains = [
+            domain for domain, (label, _) in zip(lane_domains, lane_specs)
+            if label == "exons"
+        ]
+        fig.add_annotation(
+            text="exons",
+            x=0, xref="paper", xanchor="right", xshift=-8,
+            y=(min(d[0] for d in exon_domains) + max(d[1] for d in exon_domains)) / 2,
+            yref="paper", yanchor="middle",
+            showarrow=False,
+            font=dict(color=INK, size=11),
+        )
     # Inlining plotly.js costs ~3 MB but opens without a network connection,
     # which is what an archived or emailed plot needs; "cdn" keeps it small.
     fig.write_html(output, include_plotlyjs=True if inline_plotlyjs else "cdn")
