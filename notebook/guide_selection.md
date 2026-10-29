@@ -87,8 +87,9 @@ half of every transcript, hotspots merge into kilobase-wide blobs, and a 2 kb
 window contains 0–3 of them. The default **0.9** (about the 90th percentile
 here) gives hotspots 60–90 bp wide and 11–23 per 2 kb window.
 
-`--merge-gap` — how many low-scoring bases may separate two clusters of one
-hotspot — is the most sensitive knob in the script. At `--min-efficacy 0.9`:
+`--merge-gap` — how many bases covered by no qualifying guide may separate two
+clusters of one hotspot — is the most sensitive knob in the script. At
+`--min-efficacy 0.9`:
 
 | `--merge-gap` | PIK3CG | PIK3CD | PIK3CA | PIK3CB |
 |---|---|---|---|---|
@@ -160,12 +161,61 @@ Since the cluster of hotspot window scan analysis revealed that clusters are fai
 even distributed across and gain over different windows is modest, we will go ahead 
 and select regions within CDS of each isoform and will select the following regions for cloning:
 
-| transcript | gene | best window | length |
-|---|---|---|---|---|---|---|
-| NM_006218.4 | PIK3CA | 2048-4047 | 2000 | 
-| NM_006219.3 | PIK3CB | 2000-4000 | 2000 | 
-| NM_005026.5 | PIK3CD | 3215-5214 | 2000 | 
-| NM_002649.3 | PIK3CG | 349-2348 | 2000 |
+| transcript | gene | CDS | selected region | length | codons |
+|---|---|---|---|---|---|
+| NM_006218.4 | PIK3CA | 324-3530 | 1002-2999 | 1998 | 666 |
+| NM_006219.3 | PIK3CB | 356-3568 | 1001-2998 | 1998 | 666 |
+| NM_005026.5 | PIK3CD | 210-3344 | 501-2498 | 1998 | 666 |
+| NM_002649.3 | PIK3CG | 311-3619 | 1001-2998 | 1998 | 666 |
+| NM_000942.5 | PPIB | 37-687 | 37-684 | 648 | 216 |
+
+### These boundaries are set by the fusion, not by the tiling
+
+The insert is cloned as a **translational reporter fusion**, so three constraints
+bind simultaneously and none of them is negotiable:
+
+1. **The 5' end must sit on a native CDS codon boundary**, i.e.
+   `(start - cds_start) % 3 == 0`. PIK3CA is the only row where this moved the
+   coordinate: (1001 − 324) mod 3 = 2, so 1,001 is mid-codon and the insert
+   starts at **1,002**. The other three happen to start flush, which is exactly
+   why this is easy to miss — three rows give no warning.
+2. **The length must be a multiple of 3**, or the reporter downstream is
+   frameshifted no matter how clean the 5' end is. 2,000 is not (2000 = 3×666+2),
+   so the length is **1,998** — the largest multiple of 3 under 2,000, as
+   required.
+3. **No in-frame stop codon**, or translation terminates before reaching the
+   reporter. Verified: zero in the native frame for all five inserts. This is
+   expected for an internal CDS fragment rather than lucky, but the other two
+   frames carry 17-63 stops each, so a one-base slip is not a subtle failure —
+   PIK3CB in frame +2 hits `TAA` three bases in.
+
+Note what this means for the stop-codon column in the QC report: it stays at 99,
+104, 44, 69, because it counts `TAA`/`TAG`/`TGA` at every offset in every frame
+and is deliberately frame-blind (see the module docstring of
+[src/seqqc.py](src/seqqc.py)). Those counts are chance — about 94 per 2 kb —
+and are **not** the number that matters here. The frame-aware count is the one
+above, and it is zero.
+
+**PPIB is no longer the whole transcript.** It cannot be: the 5'UTR is not
+coding, and the native stop codon at 685-687 would terminate translation before
+the reporter. The insert is therefore the CDS minus that terminal stop, 37-684 =
+648 nt = 216 codons, which is under 2,000 and already a multiple of 3. At 893 nt
+the transcript was never long enough for a 1,998 nt window anyway. Trimming the
+3'UTR also removed the 13 nt poly-T run at 877 and the low-entropy flag, both of
+which were in untranslated sequence.
+
+These are **not** the hotspot-scan winners from the section above, and the column
+is deliberately not called "best window". The scan maximises hotspot count over
+the whole transcript, so three of its four winners run past the stop codon —
+PIK3CA by 517 nt, PIK3CB by 432 nt, and PIK3CD by 1,870 nt, which would put 94%
+of that construct in the 3'UTR. Since the scan showed the gain over different
+windows is modest, CDS containment is worth more than the last few hotspots.
+Every region above lies wholly inside its CDS, taken from the `CDS` feature of
+the matching `.gbk` in [data/pik3-iso/](data/pik3-iso/).
+
+This table is the same set as `results/pik3/target_site_selection.tsv`, which is
+what [scripts/check_target_sites.py](scripts/check_target_sites.py) reads; the
+two must stay in step.
 
 ## Checking for propertoes of selected regions for cloning
 
