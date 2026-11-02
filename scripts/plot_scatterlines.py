@@ -34,9 +34,12 @@ guide rather than at the end of the transcript.
 
 Nothing here filters by efficacy, and the colour scale is pinned to 0-1 so two
 plots can be compared. The one filter available is ``--drop-qc-flagged``, which
-removes guides failing guide-level QC -- GC outside 40-60%, or a run of 4 or
-more identical bases -- judged by ``seqqc.check_guide`` on the ``spacer_seq``
-column. It is **off by default**: every row is plotted unless it is asked for.
+removes guides failing guide-level QC -- GC outside 40-60%, a run of 4 or more
+T/U, or a run of 4 or more A, C or G -- judged by ``seqqc.check_guide`` on the
+``spacer_seq`` column. It is **off by default**: every row is plotted unless it
+is asked for. The two run flags are reported and thresholded separately
+(``--homopolymer-t-min``, ``--homopolymer-v-min``), since a poly-U run is a U6
+termination problem and a V run is a synthesis one.
 
 The QC filter recomputes from the spacer rather than joining ``guide_qc.tsv``,
 so there is one source of truth and no way to filter a plot against a stale QC
@@ -157,10 +160,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--drop-qc-flagged (default: %(default)s)",
     )
     parser.add_argument(
-        "--homopolymer-min", type=int,
-        default=seqqc.DEFAULT_GUIDE_HOMOPOLYMER_MIN, metavar="N",
-        help="shortest run of identical bases that disqualifies a guide, used "
-        "only with --drop-qc-flagged (default: %(default)s)",
+        "--homopolymer-t-min", type=int,
+        default=seqqc.DEFAULT_GUIDE_HOMOPOLYMER_T_MIN, metavar="N",
+        help="shortest run of T (or U) that disqualifies a guide, used only "
+        "with --drop-qc-flagged (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--homopolymer-v-min", type=int,
+        default=seqqc.DEFAULT_GUIDE_HOMOPOLYMER_V_MIN, metavar="N",
+        help="shortest run of V -- IUPAC for A, C or G -- that disqualifies a "
+        "guide, used only with --drop-qc-flagged (default: %(default)s)",
     )
     parser.add_argument(
         "--cdn-plotlyjs",
@@ -202,12 +211,13 @@ def main(argv: list[str] | None = None) -> int:
             f"error: --gc-min ({args.gc_min}) is above --gc-max "
             f"({args.gc_max}), so no guide could pass QC"
         )
-    if args.homopolymer_min < 2:
-        raise SystemExit(
-            f"error: --homopolymer-min must be at least 2, got "
-            f"{args.homopolymer_min}: a run of 1 is every base, so every "
-            "guide would be dropped"
-        )
+    for flag, value in (("--homopolymer-t-min", args.homopolymer_t_min),
+                        ("--homopolymer-v-min", args.homopolymer_v_min)):
+        if value < 2:
+            raise SystemExit(
+                f"error: {flag} must be at least 2, got {value}: a run of 1 "
+                "is every base, so every guide would be dropped"
+            )
 
     genbank_dirs = args.genbank_dir or []
     for directory in genbank_dirs:
@@ -238,14 +248,16 @@ def main(argv: list[str] | None = None) -> int:
             prediction_df,
             gc_min=args.gc_min,
             gc_max=args.gc_max,
-            homopolymer_min=args.homopolymer_min,
+            homopolymer_t_min=args.homopolymer_t_min,
+            homopolymer_v_min=args.homopolymer_v_min,
         )
         plotted_df = qc.kept
         if plotted_df.empty:
             raise SystemExit(
                 f"error: --drop-qc-flagged removed all {qc.n_input} guides "
-                f"(GC band {qc.gc_min}-{qc.gc_max}, homopolymer >= "
-                f"{qc.homopolymer_min}); nothing would be plotted"
+                f"(GC band {qc.gc_min}-{qc.gc_max}, T runs >= "
+                f"{qc.homopolymer_t_min}, V runs >= {qc.homopolymer_v_min}); "
+                "nothing would be plotted"
             )
 
     guides = build_guides(plotted_df, sirnas)
@@ -260,7 +272,8 @@ def main(argv: list[str] | None = None) -> int:
     if qc is not None:
         print(
             f"QC filter: GC band {qc.gc_min}-{qc.gc_max} (inclusive), "
-            f"homopolymer runs >= {qc.homopolymer_min}",
+            f"T/U runs >= {qc.homopolymer_t_min}, V (A/C/G) runs >= "
+            f"{qc.homopolymer_v_min}",
             file=sys.stderr,
         )
         print(
@@ -270,8 +283,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         # Per flag, and these overlap: one guide can be both GC-poor and
         # homopolymeric, so they do not sum to the dropped total.
-        for flag in ("gc_low", "gc_high", "homopolymer"):
-            print(f"    {flag:<12}{qc.by_flag.get(flag, 0)}", file=sys.stderr)
+        for flag in ("gc_low", "gc_high", "homopolymer_t", "homopolymer_v"):
+            print(f"    {flag:<16}{qc.by_flag.get(flag, 0)}", file=sys.stderr)
         for transcript in sorted(lengths):
             n_dropped = qc.dropped_per_transcript.get(transcript, 0)
             n_kept = int((plotted_df["transcript_id"] == transcript).sum())

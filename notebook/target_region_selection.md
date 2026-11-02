@@ -1,0 +1,259 @@
+# Target region selection
+
+For each conserved region, select the 1.5–2 kb sub-region with the widest coverage of high-efficacy guides. Selected sub-regions will be cloned and tested.
+
+To determin the best sub-region, will use a sliding window scan and score each window by the number of hotspots containing high-efficacy guides. Hotspots are defined as clusters of overlapping high-efficacy guides, and the window with the highest number of hotspots will be selected for cloning.
+
+## Hotspot window scan
+
+Slide a window along each conserved region and score it by the guides inside it.
+
+A good 30-mer site yields ~30 overlapping high-efficacy guides and a guide count would rank the
+longest good stretch first rather than the region offering the most independent
+choices. Overlapping high-efficacy guides are merged into **hotspots** — one
+hotspot is one site — and a window is scored by how many whole hotspots it
+contains.
+
+```bash
+python3 scripts/find_hotspot_regions.py \
+    --predictions results/pik3/pik3-predictions.csv \
+    --regions results/blastn/PIK3C*_location.blastn \
+    --output results/pik3/hotspot_regions.tsv \
+    --all-windows results/pik3/hotspot_windows.tsv \
+    --hotspots-out results/pik3/hotspots.tsv \
+    --max-gap 60 --sweep-thresholds 0.90,0.93,0.95
+```
+
+## Dense and evenly covered, not a few top scorers
+
+The selection criterion is **many independent sites spread evenly**, not the
+highest-scoring guides. Hotspot count gives the first half of that. `--max-gap`
+gives the second: it rejects any window containing a stretch of N+ bases with no
+hotspot in it, because a construct is only as useful as its worst region and a
+dead zone is where no guide can be placed at all. Without it, `largest_gap` is
+only a tie-break and a clumpy window can still win on count.
+
+This matters on real data. PIK3CA's two candidate blocks are near-tied on raw
+guide count but not on shape:
+
+| PIK3CA candidate | hotspots | guides >=0.9 | guides >=0.95 | worst dead zone | core covered |
+|---|---|---|---|---|---|
+| 2048-4047 | **23** | 261 | 14 | **35 bp** | **81.0%** |
+| 5498-7497 | 17 | **319** | **39** | 115 bp | 74.8% |
+
+The second block has *more* guides at every cutoff and a higher ceiling, but
+packs them into fewer, longer stretches with a 115 bp hole. `--max-gap 60`
+excludes it.
+
+## Choosing the two parameters that matter
+
+`--min-efficacy` is **absolute, not a quantile**, so counts stay comparable
+between transcripts — which means it has to be set against the score
+distribution of the predictor, not by intuition. For `pik3-predictions.csv` the
+median predicted efficacy is already **0.823**, so a 0.8 cutoff qualifies over
+half of every transcript, hotspots merge into kilobase-wide blobs, and a 2 kb
+window contains 0–3 of them. The default **0.9** (about the 90th percentile
+here) gives hotspots 60–90 bp wide and 11–23 per 2 kb window.
+
+`--merge-gap` — how many bases covered by no qualifying guide may separate two
+clusters of one hotspot — is the most sensitive knob in the script. At
+`--min-efficacy 0.9`:
+
+| `--merge-gap` | PIK3CG | PIK3CD | PIK3CA | PIK3CB |
+|---|---|---|---|---|
+| 0 (overlap or abut) | 58 | 47 | 87 | 48 |
+| 10 | 34 | 23 | 56 | 30 |
+| 30 | 8 | 10 | 22 | 15 |
+| 100 | 1 | 1 | 2 | 1 |
+
+The default **0** merges only clusters that overlap or abut, so two guides
+sharing no base stay two independent sites. Both parameters are echoed into the
+run summary, since a hotspot count means nothing without them.
+
+Window length is swept over 1.5–2 kb rather than fixed at 2 kb, because three of
+the PIK3CD conserved regions are shorter than 2 kb. A longer window cannot
+contain fewer hotspots, so ties break towards the **shorter** window: the answer
+is the smallest construct achieving the best count.
+
+## Result over the committed PI3K run
+
+240 hotspots at `--min-efficacy 0.9 --merge-gap 0`; 55 (23%) fall outside the
+conserved regions or straddle a boundary and so are not placeable in any window.
+`--max-gap 60` then rejects 617 of the 747 candidate windows.
+
+| transcript | gene | best window | length | hotspots | worst dead zone | guides |
+|---|---|---|---|---|---|---|
+| NM_006218.4 | PIK3CA | 2048-4047 | 2000 | 23 of 87 | 35 bp | 261 |
+| NM_006219.3 | PIK3CB | 1987-3486 | 1500 | 15 of 48 | 36 bp | 228 |
+| NM_005026.5 | PIK3CD | 3215-5214 | 2000 | 20 of 47 | 39 bp | 377 |
+| NM_002649.3 | PIK3CG | 349-2348 | 2000 | 16 of 58 | 55 bp | 375 |
+
+### How robust each of these is
+
+Tested by re-running at `--merge-gap` 0, 5, 10 and 20 with everything else
+fixed. Three of the four winners hold; one does not.
+
+| gene | winner across merge-gap 0/5/10/20 | verdict |
+|---|---|---|
+| PIK3CG | 349-2348 at all four | solid |
+| PIK3CB | 1987-3486 at all four | solid |
+| PIK3CD | 3215-5214, then 2515-4514 | shifts 700 bp, still overlapping |
+| PIK3CA | 2048-4047 → 2298-4297 → 3098-5097 → 6548-8297 | **drifts, then jumps** |
+
+**PIK3CA is genuinely undetermined by this metric.** Its early block (~2048-4047)
+and late block (~6000-8300) are near-tied, and which wins depends on the
+parameters rather than the data — the same ambiguity shows up under the threshold
+sweep. Break that tie on something else: ORF position, predicted secondary
+structure, or the genome-wide off-target stage. The other three can be taken as
+they stand.
+
+### Two things not to over-read
+
+**The gain over an average window is modest.** Hotspots are fairly evenly
+distributed, so the best window beats the worst by roughly 1.5x, not 10x.
+
+**`--max-gap 60` and a high `--min-efficacy` are incompatible here.** Above about
+0.9 the hotspots thin out and no window has a 60 bp core, so the threshold sweep
+returns no row for most transcripts and reports stability as UNTESTED rather than
+confirmed. That is why robustness above is argued from `--merge-gap` instead. If
+you want a threshold sweep to mean something, loosen `--max-gap` for it.
+
+`hotspot_windows.tsv` holds every scored window *before* the `--max-gap` filter
+and overlap suppression — deliberately, since a window rejected by the filter is
+exactly what you want to see when a winner looks surprising. `hotspots.tsv` has
+every hotspot with its guide count and best guide.
+
+## Target region selection
+
+Since the cluster of hotspot window scan analysis revealed that clusters are fairly 
+even distributed across and gain over different windows is modest, we will go ahead 
+and select regions within CDS of each isoform and will select the following regions for cloning:
+
+| transcript | gene | CDS | selected region | length | codons |
+|---|---|---|---|---|---|
+| NM_006218.4 | PIK3CA | 324-3530 | 1002-2999 | 1998 | 666 |
+| NM_006219.3 | PIK3CB | 356-3568 | 1001-2998 | 1998 | 666 |
+| NM_005026.5 | PIK3CD | 210-3344 | 501-2498 | 1998 | 666 |
+| NM_002649.3 | PIK3CG | 311-3619 | 1001-2998 | 1998 | 666 |
+| NM_000942.5 | PPIB | 37-687 | 37-684 | 648 | 216 |
+
+### These boundaries are set by the fusion, not by the tiling
+
+The insert is cloned as a **translational reporter fusion**, so three constraints
+bind simultaneously and none of them is negotiable:
+
+1. **The 5' end must sit on a native CDS codon boundary**, i.e.
+   `(start - cds_start) % 3 == 0`. PIK3CA is the only row where this moved the
+   coordinate: (1001 − 324) mod 3 = 2, so 1,001 is mid-codon and the insert
+   starts at **1,002**. The other three happen to start flush, which is exactly
+   why this is easy to miss — three rows give no warning.
+2. **The length must be a multiple of 3**, or the reporter downstream is
+   frameshifted no matter how clean the 5' end is. 2,000 is not (2000 = 3×666+2),
+   so the length is **1,998** — the largest multiple of 3 under 2,000, as
+   required.
+3. **No in-frame stop codon**, or translation terminates before reaching the
+   reporter. Verified: zero in the native frame for all five inserts. This is
+   expected for an internal CDS fragment rather than lucky, but the other two
+   frames carry 17-63 stops each, so a one-base slip is not a subtle failure —
+   PIK3CB in frame +2 hits `TAA` three bases in.
+
+Note what this means for the stop-codon column in the QC report: it stays at 99,
+104, 44, 69, because it counts `TAA`/`TAG`/`TGA` at every offset in every frame
+and is deliberately frame-blind (see the module docstring of
+[src/seqqc.py](src/seqqc.py)). Those counts are chance — about 94 per 2 kb —
+and are **not** the number that matters here. The frame-aware count is the one
+above, and it is zero.
+
+**PPIB is no longer the whole transcript.** It cannot be: the 5'UTR is not
+coding, and the native stop codon at 685-687 would terminate translation before
+the reporter. The insert is therefore the CDS minus that terminal stop, 37-684 =
+648 nt = 216 codons, which is under 2,000 and already a multiple of 3. At 893 nt
+the transcript was never long enough for a 1,998 nt window anyway. Trimming the
+3'UTR also removed the 13 nt poly-T run at 877 and the low-complexity sequence
+around it, both of which were in untranslated sequence.
+
+These are **not** the hotspot-scan winners from the section above, and the column
+is deliberately not called "best window". The scan maximises hotspot count over
+the whole transcript, so three of its four winners run past the stop codon —
+PIK3CA by 517 nt, PIK3CB by 432 nt, and PIK3CD by 1,870 nt, which would put 94%
+of that construct in the 3'UTR. Since the scan showed the gain over different
+windows is modest, CDS containment is worth more than the last few hotspots.
+Every region above lies wholly inside its CDS, taken from the `CDS` feature of
+the matching `.gbk` in [data/pik3-iso/](data/pik3-iso/).
+
+This table is the same set as `results/pik3/target_site_selection.tsv`, which is
+what [scripts/check_target_sites.py](scripts/check_target_sites.py) reads; the
+two must stay in step.
+
+## Checking for properties of selected regions for cloning
+
+Run the QC after updating `target_site_selection.tsv`. The selection table
+contains both the PI3K transcripts and PPIB, so pass both FASTA directories:
+
+```bash
+conda activate pik3-guide
+python scripts/check_target_sites.py \
+    --selection results/pik3/target_site_selection.tsv \
+    --input-dir data/pik3-iso \
+    --input-dir data/ppib \
+    --output-dir results/pik3
+```
+
+The question here is whether **the selected insert as a whole** is suitable for
+cloning, so every measure is a property of the whole fragment or a feature with
+a position inside it. GC and entropy are therefore single numbers over the
+region, not scans at spacer width. A 30 nt window is a candidate guide, and
+whether a guide has workable GC is a question for guide selection, asked of the
+guides themselves — it says nothing about the insert being cloned, and a count
+of out-of-band windows is not a cloning criterion for any method.
+
+The script extracts each 1-based inclusive region from its transcript FASTA and
+checks that the declared length agrees with `end - start + 1`. It reports:
+
+- **GC content** of the whole insert, flagged if outside 30–70%. These defaults
+  are screening thresholds, not a universal cloning pass/fail range.
+- **Low-complexity sequence**: runs of at least four T bases, runs of at least
+  five A/C/G bases, tandem repeats of 2–4 nt motifs repeated at least three
+  times, each reported with its position; plus the insert's Shannon entropy,
+  flagged below 1.5 bits. The entropy number is coarse by construction — a
+  buried 30 nt homopolymer barely moves it — which is why the located repeat
+  scans, not entropy, are what find local low complexity.
+- **Stop codons**: counts and positions of TAA, TAG and TGA at every offset.
+  These are informational and frame-blind, so their presence is not a defect.
+  This is separate from the frame-aware check above, which confirms that the
+  selected coding inserts have no in-frame stop codons.
+
+The checked regions produced these summary values with the default thresholds:
+
+| gene | region | GC | entropy (bits) | poly-T runs | A/C/G homopolymers | tandem repeats | stop codons* |
+|---|---|---:|---:|---:|---:|---:|---:|
+| PIK3CA | 1002-2999 | 39.5% | 1.965 | 10 | 7 | 8 | 99 |
+| PIK3CB | 1001-2998 | 40.3% | 1.971 | 11 | 8 | 6 | 104 |
+| PIK3CD | 501-2498 | 62.4% | 1.954 | 2 | 6 | 5 | 44 |
+| PIK3CG | 1001-2998 | 48.5% | 1.993 | 6 | 6 | 4 | 69 |
+| PPIB | 37-684 | 54.2% | 1.983 | 2 | 2 | 4 | 19 |
+
+`*` Stop counts are frame-blind. **All five inserts sit inside the GC band and
+above the entropy threshold**, so the only flags raised are the located
+low-complexity features. Those flags identify features to inspect in context;
+they do not automatically disqualify a region. For example, poly-T is a
+premature-termination concern for a U6-driven construct, while these selected
+regions are coding inserts for a translational fusion.
+
+The run writes three files to `results/pik3/`:
+
+- `target_site_qc.tsv` contains one summary row per region: whole-insert GC,
+  entropy, feature counts, ambiguous-base count, flags and the threshold fields
+  used. There is no separate in-band column — `gc_frac` and `gc_band` are both
+  on the row, so the verdict is derivable, and `flags` states it.
+- `target_site_qc_features.tsv` lists each detected feature with its
+  1-based inclusive transcript coordinates and its offset within the selected
+  region, plus its severity. Use this file to locate and review individual
+  features. It holds only features that have a position — poly-T, homopolymers,
+  tandem repeats and stop codons; GC and entropy describe the whole insert and
+  live in the summary row alone.
+- `target_site_qc.md` is a readable report with the summary and per-region
+  details.
+
+All reported coordinates follow the same 1-based inclusive convention as
+`target_site_selection.tsv`.

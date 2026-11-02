@@ -38,9 +38,14 @@ GUIDES = [
     ("T1:3-32",   "T1",  3, "GCGCGCGCGCGCGCGCGCAUAUAUAUAUAU", ()),       # 60% exactly
     ("T1:4-33",   "T1",  4, "GCGCGCGCGCGAUAUAUAUAUAUAUAUAUA", ("gc_low",)),
     ("T1:5-34",   "T1",  5, "GCGCGCGCGCGCGCGCGCGAUAUAUAUAUA", ("gc_high",)),
-    ("T1:6-35",   "T1",  6, "UUUUGCAUGCAUGCAUGCAUGCAUGCAUAU", ("homopolymer",)),
+    ("T1:6-35",   "T1",  6, "UUUUGCAUGCAUGCAUGCAUGCAUGCAUAU",
+     ("homopolymer_t",)),
+    ("T1:7-36",   "T1",  7, "GGGGAUAUGCAUGCAUAUAUGCAUGCAUAU",
+     ("homopolymer_v",)),
+    ("T1:8-37",   "T1",  8, "UUUUGGGGAUGCAUGCAUGCAUGCAUGCAU",
+     ("homopolymer_t", "homopolymer_v")),
     ("T2:1-30",   "T2",  1, "AAAAAUAUAUAUAUAUAUAUAUAUAUAUGC",
-     ("gc_low", "homopolymer")),
+     ("gc_low", "homopolymer_v")),
     ("T2:100-129", "T2", 100, "GCAUGCAUGCAUGCAUGCAUGCAUGCAUGA", ()),
 ]
 
@@ -98,15 +103,22 @@ class TestDropQcFlagged(unittest.TestCase):
         self.assertEqual(self.qc.n_input, len(GUIDES))
         self.assertEqual(self.qc.n_kept + self.qc.n_dropped, self.qc.n_input)
         self.assertEqual(self.qc.n_kept, 4)
-        self.assertEqual(self.qc.n_dropped, 4)
+        self.assertEqual(self.qc.n_dropped, 6)
 
     def test_per_flag_counts_overlap_rather_than_summing(self):
         # T2:1-30 raises two flags, so the per-flag counts sum to more than
         # the number of guides dropped. A summary that added them would
         # overstate the damage.
-        self.assertEqual(self.qc.by_flag,
-                         {"gc_low": 2, "gc_high": 1, "homopolymer": 2})
+        self.assertEqual(
+            self.qc.by_flag,
+            {"gc_low": 2, "gc_high": 1, "homopolymer_t": 2, "homopolymer_v": 3},
+        )
         self.assertGreater(sum(self.qc.by_flag.values()), self.qc.n_dropped)
+
+    def test_t_and_v_runs_are_counted_under_separate_flags(self):
+        # A filter that merged them would report one count of 5 here.
+        self.assertEqual(self.qc.by_flag["homopolymer_t"], 2)
+        self.assertEqual(self.qc.by_flag["homopolymer_v"], 3)
 
     def test_a_flag_nobody_raised_is_absent_not_zero(self):
         qc = drop_qc_flagged(frame(GUIDES[:1]))
@@ -115,7 +127,7 @@ class TestDropQcFlagged(unittest.TestCase):
         self.assertEqual(qc.by_flag.get("gc_low", 0), 0)
 
     def test_dropped_per_transcript(self):
-        self.assertEqual(self.qc.dropped_per_transcript, {"T1": 3, "T2": 1})
+        self.assertEqual(self.qc.dropped_per_transcript, {"T1": 5, "T2": 1})
 
     def test_a_transcript_losing_nothing_is_absent_from_the_mapping(self):
         qc = drop_qc_flagged(frame([g for g in GUIDES if not g[4]]))
@@ -137,17 +149,29 @@ class TestDropQcFlagged(unittest.TestCase):
     def test_thresholds_are_recorded(self):
         self.assertEqual(self.qc.gc_min, seqqc.DEFAULT_GUIDE_GC_MIN)
         self.assertEqual(self.qc.gc_max, seqqc.DEFAULT_GUIDE_GC_MAX)
-        self.assertEqual(self.qc.homopolymer_min,
-                         seqqc.DEFAULT_GUIDE_HOMOPOLYMER_MIN)
+        self.assertEqual(self.qc.homopolymer_t_min,
+                         seqqc.DEFAULT_GUIDE_HOMOPOLYMER_T_MIN)
+        self.assertEqual(self.qc.homopolymer_v_min,
+                         seqqc.DEFAULT_GUIDE_HOMOPOLYMER_V_MIN)
 
     def test_thresholds_are_honoured_not_just_recorded(self):
         loose = drop_qc_flagged(self.df, gc_min=0.0, gc_max=1.0,
-                                homopolymer_min=99)
+                                homopolymer_t_min=99, homopolymer_v_min=99)
         self.assertEqual(loose.n_dropped, 0)
         self.assertEqual(loose.by_flag, {})
 
         strict = drop_qc_flagged(self.df, gc_min=0.99, gc_max=1.0)
         self.assertEqual(strict.n_kept, 0)
+
+    def test_the_two_run_thresholds_are_independent(self):
+        # Relaxing T must leave the V drops standing, and vice versa.
+        t_loose = drop_qc_flagged(self.df, homopolymer_t_min=99)
+        self.assertNotIn("homopolymer_t", t_loose.by_flag)
+        self.assertEqual(t_loose.by_flag["homopolymer_v"], 3)
+
+        v_loose = drop_qc_flagged(self.df, homopolymer_v_min=99)
+        self.assertNotIn("homopolymer_v", v_loose.by_flag)
+        self.assertEqual(v_loose.by_flag["homopolymer_t"], 2)
 
     def test_an_everything_dropped_filter_returns_an_empty_frame(self):
         # Not an exception: the CLI is what decides that plotting nothing is
@@ -189,7 +213,7 @@ class TestFilteringDoesNotShrinkTheAxis(unittest.TestCase):
 
     def test_length_from_the_unfiltered_frame_is_the_full_transcript(self):
         df = frame()
-        self.assertEqual(transcript_lengths(df), {"T1": 35, "T2": 129})
+        self.assertEqual(transcript_lengths(df), {"T1": 37, "T2": 129})
 
     def test_the_last_guide_on_a_transcript_being_dropped_would_shrink_it(self):
         # T2's surviving guide starts at 100; its dropped one at 1. Reverse the
@@ -198,7 +222,7 @@ class TestFilteringDoesNotShrinkTheAxis(unittest.TestCase):
         guides = [
             ("T3:1-30", "T3", 1, "GCAUGCAUGCAUGCAUGCAUGCAUGCAUGA", ()),
             ("T3:500-529", "T3", 500, "AAAAAUAUAUAUAUAUAUAUAUAUAUAUGC",
-             ("gc_low", "homopolymer")),
+             ("gc_low", "homopolymer_v")),
         ]
         df = frame(guides)
         unfiltered = transcript_lengths(df)

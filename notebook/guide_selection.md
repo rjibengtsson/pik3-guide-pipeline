@@ -32,260 +32,243 @@ python3 scripts/get_conserved_regions.py -f data/pik3-iso/PIK3CA_aligned.fasta -
 python3 scripts/get_conserved_regions.py -f data/pik3-iso/PIK3CB_aligned.fasta -b data/pik3-iso/PIK3CB_aligned.bed -o PIK3CB_location.blastn
 ```
 
-For each conserved region, select the 1.5–2 kb sub-region with the widest coverage of high-efficacy guides. Selected sub-regions will be cloned and tested.
+# QC filter
 
-To determin the best sub-region, will use a sliding window scan and score each window by the number of hotspots containing high-efficacy guides. Hotspots are defined as clusters of overlapping high-efficacy guides, and the window with the highest number of hotspots will be selected for cloning.
+Guides were filtered based on GC content and homopolymer runs. The following thresholds were used:
 
-# Hotspot window scan
-
-Slide a window along each conserved region and score it by the guides inside it.
-
-A good 30-mer site yields ~30 overlapping high-efficacy guides and a guide count would rank the
-longest good stretch first rather than the region offering the most independent
-choices. Overlapping high-efficacy guides are merged into **hotspots** — one
-hotspot is one site — and a window is scored by how many whole hotspots it
-contains.
-
-```bash
-python3 scripts/find_hotspot_regions.py \
-    --predictions results/pik3/pik3-predictions.csv \
-    --regions results/blastn/PIK3C*_location.blastn \
-    --output results/pik3/hotspot_regions.tsv \
-    --all-windows results/pik3/hotspot_windows.tsv \
-    --hotspots-out results/pik3/hotspots.tsv \
-    --max-gap 60 --sweep-thresholds 0.90,0.93,0.95
-```
-
-## Dense and evenly covered, not a few top scorers
-
-The selection criterion is **many independent sites spread evenly**, not the
-highest-scoring guides. Hotspot count gives the first half of that. `--max-gap`
-gives the second: it rejects any window containing a stretch of N+ bases with no
-hotspot in it, because a construct is only as useful as its worst region and a
-dead zone is where no guide can be placed at all. Without it, `largest_gap` is
-only a tie-break and a clumpy window can still win on count.
-
-This matters on real data. PIK3CA's two candidate blocks are near-tied on raw
-guide count but not on shape:
-
-| PIK3CA candidate | hotspots | guides >=0.9 | guides >=0.95 | worst dead zone | core covered |
-|---|---|---|---|---|---|
-| 2048-4047 | **23** | 261 | 14 | **35 bp** | **81.0%** |
-| 5498-7497 | 17 | **319** | **39** | 115 bp | 74.8% |
-
-The second block has *more* guides at every cutoff and a higher ceiling, but
-packs them into fewer, longer stretches with a 115 bp hole. `--max-gap 60`
-excludes it.
-
-## Choosing the two parameters that matter
-
-`--min-efficacy` is **absolute, not a quantile**, so counts stay comparable
-between transcripts — which means it has to be set against the score
-distribution of the predictor, not by intuition. For `pik3-predictions.csv` the
-median predicted efficacy is already **0.823**, so a 0.8 cutoff qualifies over
-half of every transcript, hotspots merge into kilobase-wide blobs, and a 2 kb
-window contains 0–3 of them. The default **0.9** (about the 90th percentile
-here) gives hotspots 60–90 bp wide and 11–23 per 2 kb window.
-
-`--merge-gap` — how many bases covered by no qualifying guide may separate two
-clusters of one hotspot — is the most sensitive knob in the script. At
-`--min-efficacy 0.9`:
-
-| `--merge-gap` | PIK3CG | PIK3CD | PIK3CA | PIK3CB |
-|---|---|---|---|---|
-| 0 (overlap or abut) | 58 | 47 | 87 | 48 |
-| 10 | 34 | 23 | 56 | 30 |
-| 30 | 8 | 10 | 22 | 15 |
-| 100 | 1 | 1 | 2 | 1 |
-
-The default **0** merges only clusters that overlap or abut, so two guides
-sharing no base stay two independent sites. Both parameters are echoed into the
-run summary, since a hotspot count means nothing without them.
-
-Window length is swept over 1.5–2 kb rather than fixed at 2 kb, because three of
-the PIK3CD conserved regions are shorter than 2 kb. A longer window cannot
-contain fewer hotspots, so ties break towards the **shorter** window: the answer
-is the smallest construct achieving the best count.
-
-## Result over the committed PI3K run
-
-240 hotspots at `--min-efficacy 0.9 --merge-gap 0`; 55 (23%) fall outside the
-conserved regions or straddle a boundary and so are not placeable in any window.
-`--max-gap 60` then rejects 617 of the 747 candidate windows.
-
-| transcript | gene | best window | length | hotspots | worst dead zone | guides |
-|---|---|---|---|---|---|---|
-| NM_006218.4 | PIK3CA | 2048-4047 | 2000 | 23 of 87 | 35 bp | 261 |
-| NM_006219.3 | PIK3CB | 1987-3486 | 1500 | 15 of 48 | 36 bp | 228 |
-| NM_005026.5 | PIK3CD | 3215-5214 | 2000 | 20 of 47 | 39 bp | 377 |
-| NM_002649.3 | PIK3CG | 349-2348 | 2000 | 16 of 58 | 55 bp | 375 |
-
-### How robust each of these is
-
-Tested by re-running at `--merge-gap` 0, 5, 10 and 20 with everything else
-fixed. Three of the four winners hold; one does not.
-
-| gene | winner across merge-gap 0/5/10/20 | verdict |
+| flag | raised when | rationale |
 |---|---|---|
-| PIK3CG | 349-2348 at all four | solid |
-| PIK3CB | 1987-3486 at all four | solid |
-| PIK3CD | 3215-5214, then 2515-4514 | shifts 700 bp, still overlapping |
-| PIK3CA | 2048-4047 → 2298-4297 → 3098-5097 → 6548-8297 | **drifts, then jumps** |
+| `gc_low` | GC fraction below `--gc-min` | weak guide-target duplex |
+| `gc_high` | GC fraction above `--gc-max` | secondary structure, reduced specificity |
+| `homopolymer_t` | run of >=4 T/U (`--homopolymer-t-min`) | U6 premature-termination signal |
+| `homopolymer_v` | run of >=4 A, C or G (`--homopolymer-v-min`) | synthesis and folding problems |
 
-**PIK3CA is genuinely undetermined by this metric.** Its early block (~2048-4047)
-and late block (~6000-8300) are near-tied, and which wins depends on the
-parameters rather than the data — the same ambiguity shows up under the threshold
-sweep. Break that tie on something else: ORF position, predicted secondary
-structure, or the genome-wide off-target stage. The other three can be taken as
-they stand.
+The rationale column is the conventional reasoning for these thresholds, not something
+measured in this pipeline — nothing here tests activity, only sequence composition.
 
-### Two things not to over-read
+GC thresholds are **fractions, not percentages** — `0.40` means 40%. The two run flags
+are kept separate because they are different liabilities with different remedies: a T/U
+run terminates transcription, whereas an A/C/G run is a synthesis problem. A combined
+count cannot say which one a guide has. `V` is IUPAC for A, C or G.
 
-**The gain over an average window is modest.** Hotspots are fairly evenly
-distributed, so the best window beats the worst by roughly 1.5x, not 10x.
+Both the measurements and the thresholds are written into every output row, so a flag can
+be audited from its own row without knowing how the script was invoked.
 
-**`--max-gap 60` and a high `--min-efficacy` are incompatible here.** Above about
-0.9 the hotspots thin out and no window has a 60 bp core, so the threshold sweep
-returns no row for most transcripts and reports stability as UNTESTED rather than
-confirmed. That is why robustness above is argued from `--merge-gap` instead. If
-you want a threshold sweep to mean something, loosen `--max-gap` for it.
+The two runs below cover the **four PI3K transcripts** (28,032 guides); PPIB is scanned
+the same way further down, and behaves quite differently.
 
-`hotspot_windows.tsv` holds every scored window *before* the `--max-gap` filter
-and overlap suppression — deliberately, since a window rejected by the filter is
-exactly what you want to see when a winner looks surprising. `hotspots.tsv` has
-every hotspot with its guide count and best guide.
-
-## Target region selection
-
-Since the cluster of hotspot window scan analysis revealed that clusters are fairly 
-even distributed across and gain over different windows is modest, we will go ahead 
-and select regions within CDS of each isoform and will select the following regions for cloning:
-
-| transcript | gene | CDS | selected region | length | codons |
-|---|---|---|---|---|---|
-| NM_006218.4 | PIK3CA | 324-3530 | 1002-2999 | 1998 | 666 |
-| NM_006219.3 | PIK3CB | 356-3568 | 1001-2998 | 1998 | 666 |
-| NM_005026.5 | PIK3CD | 210-3344 | 501-2498 | 1998 | 666 |
-| NM_002649.3 | PIK3CG | 311-3619 | 1001-2998 | 1998 | 666 |
-| NM_000942.5 | PPIB | 37-687 | 37-684 | 648 | 216 |
-
-### These boundaries are set by the fusion, not by the tiling
-
-The insert is cloned as a **translational reporter fusion**, so three constraints
-bind simultaneously and none of them is negotiable:
-
-1. **The 5' end must sit on a native CDS codon boundary**, i.e.
-   `(start - cds_start) % 3 == 0`. PIK3CA is the only row where this moved the
-   coordinate: (1001 − 324) mod 3 = 2, so 1,001 is mid-codon and the insert
-   starts at **1,002**. The other three happen to start flush, which is exactly
-   why this is easy to miss — three rows give no warning.
-2. **The length must be a multiple of 3**, or the reporter downstream is
-   frameshifted no matter how clean the 5' end is. 2,000 is not (2000 = 3×666+2),
-   so the length is **1,998** — the largest multiple of 3 under 2,000, as
-   required.
-3. **No in-frame stop codon**, or translation terminates before reaching the
-   reporter. Verified: zero in the native frame for all five inserts. This is
-   expected for an internal CDS fragment rather than lucky, but the other two
-   frames carry 17-63 stops each, so a one-base slip is not a subtle failure —
-   PIK3CB in frame +2 hits `TAA` three bases in.
-
-Note what this means for the stop-codon column in the QC report: it stays at 99,
-104, 44, 69, because it counts `TAA`/`TAG`/`TGA` at every offset in every frame
-and is deliberately frame-blind (see the module docstring of
-[src/seqqc.py](src/seqqc.py)). Those counts are chance — about 94 per 2 kb —
-and are **not** the number that matters here. The frame-aware count is the one
-above, and it is zero.
-
-**PPIB is no longer the whole transcript.** It cannot be: the 5'UTR is not
-coding, and the native stop codon at 685-687 would terminate translation before
-the reporter. The insert is therefore the CDS minus that terminal stop, 37-684 =
-648 nt = 216 codons, which is under 2,000 and already a multiple of 3. At 893 nt
-the transcript was never long enough for a 1,998 nt window anyway. Trimming the
-3'UTR also removed the 13 nt poly-T run at 877 and the low-complexity sequence
-around it, both of which were in untranslated sequence.
-
-These are **not** the hotspot-scan winners from the section above, and the column
-is deliberately not called "best window". The scan maximises hotspot count over
-the whole transcript, so three of its four winners run past the stop codon —
-PIK3CA by 517 nt, PIK3CB by 432 nt, and PIK3CD by 1,870 nt, which would put 94%
-of that construct in the 3'UTR. Since the scan showed the gain over different
-windows is modest, CDS containment is worth more than the last few hotspots.
-Every region above lies wholly inside its CDS, taken from the `CDS` feature of
-the matching `.gbk` in [data/pik3-iso/](data/pik3-iso/).
-
-This table is the same set as `results/pik3/target_site_selection.tsv`, which is
-what [scripts/check_target_sites.py](scripts/check_target_sites.py) reads; the
-two must stay in step.
-
-## Checking for properties of selected regions for cloning
-
-Run the QC after updating `target_site_selection.tsv`. The selection table
-contains both the PI3K transcripts and PPIB, so pass both FASTA directories:
+## PI3K run 1: default band, 40-60% GC
 
 ```bash
-conda activate pik3-guide
-python scripts/check_target_sites.py \
-    --selection results/pik3/target_site_selection.tsv \
-    --input-dir data/pik3-iso \
-    --input-dir data/ppib \
-    --output-dir results/pik3
+python scripts/check_guides.py --guides results/pik3/guides.fasta \
+    --output results/pik3/guide_qc.tsv
 ```
 
-The question here is whether **the selected insert as a whole** is suitable for
-cloning, so every measure is a property of the whole fragment or a feature with
-a position inside it. GC and entropy are therefore single numbers over the
-region, not scans at spacer width. A 30 nt window is a candidate guide, and
-whether a guide has workable GC is a question for guide selection, asked of the
-guides themselves — it says nothing about the insert being cloned, and a count
-of out-of-band windows is not a cloning criterion for any method.
+| | guides | of 28,032 |
+|---|---|---|
+| **passing all checks** | **9,154** | **32.7%** |
+| `gc_low` (< 40%) | 11,700 | 41.7% |
+| `gc_high` (> 60%) | 3,100 | 11.1% |
+| `homopolymer_t` | 5,606 | 20.0% |
+| `homopolymer_v` | 8,427 | 30.1% |
 
-The script extracts each 1-based inclusive region from its transcript FASTA and
-checks that the declared length agrees with `end - start + 1`. It reports:
+Flags overlap, so these do not sum to the 18,878 guides flagged; 1,644 guides raise both
+run flags.
 
-- **GC content** of the whole insert, flagged if outside 30–70%. These defaults
-  are screening thresholds, not a universal cloning pass/fail range.
-- **Low-complexity sequence**: runs of at least four T bases, runs of at least
-  five A/C/G bases, tandem repeats of 2–4 nt motifs repeated at least three
-  times, each reported with its position; plus the insert's Shannon entropy,
-  flagged below 1.5 bits. The entropy number is coarse by construction — a
-  buried 30 nt homopolymer barely moves it — which is why the located repeat
-  scans, not entropy, are what find local low complexity.
-- **Stop codons**: counts and positions of TAA, TAG and TGA at every offset.
-  These are informational and frame-blind, so their presence is not a defect.
-  This is separate from the frame-aware check above, which confirms that the
-  selected coding inserts have no in-frame stop codons.
+Two things stand out. **GC-low dominates** — the four PI3K transcripts are AT-rich enough
+at 30 nt that nearly four times as many guides fall below the band as above it, so
+tightening `--gc-min` costs far more candidates than tightening `--gc-max`. And
+`homopolymer_v` is **driven by poly-A, not poly-G**: of the 16,059 runs found, A accounts
+for 6,252 and G for only 1,690 (U 6,211, C 1,906). So most of `homopolymer_v` is AT-rich
+sequence rather than the G-rich liability that flag is usually reached for.
 
-The checked regions produced these summary values with the default thresholds:
+## PI3K run 2: wide band, 10-90% GC
 
-| gene | region | GC | entropy (bits) | poly-T runs | A/C/G homopolymers | tandem repeats | stop codons* |
-|---|---|---:|---:|---:|---:|---:|---:|
-| PIK3CA | 1002-2999 | 39.5% | 1.965 | 10 | 7 | 8 | 99 |
-| PIK3CB | 1001-2998 | 40.3% | 1.971 | 11 | 8 | 6 | 104 |
-| PIK3CD | 501-2498 | 62.4% | 1.954 | 2 | 6 | 5 | 44 |
-| PIK3CG | 1001-2998 | 48.5% | 1.993 | 6 | 6 | 4 | 69 |
-| PPIB | 37-684 | 54.2% | 1.983 | 2 | 2 | 4 | 19 |
+To separate what GC filtering costs from what the run filters cost, the same scan was
+repeated with GC effectively disabled:
 
-`*` Stop counts are frame-blind. **All five inserts sit inside the GC band and
-above the entropy threshold**, so the only flags raised are the located
-low-complexity features. Those flags identify features to inspect in context;
-they do not automatically disqualify a region. For example, poly-T is a
-premature-termination concern for a U6-driven construct, while these selected
-regions are coding inserts for a translational fusion.
+```bash
+python scripts/check_guides.py --guides results/pik3/guides.fasta \
+    --gc-min 0.1 --gc-max 0.9 \
+    --output results/pik3/guide_qc_gc10-90_t4_v4.tsv
+```
 
-The run writes three files to `results/pik3/`:
+| | run 1 (0.40-0.60) | run 2 (0.10-0.90) |
+|---|---|---|
+| **passing** | 9,154 (32.7%) | **15,637 (55.8%)** |
+| `gc_low` | 11,700 | 62 |
+| `gc_high` | 3,100 | 15 |
+| `homopolymer_t` | 5,606 | 5,606 |
+| `homopolymer_v` | 8,427 | 8,427 |
 
-- `target_site_qc.tsv` contains one summary row per region: whole-insert GC,
-  entropy, feature counts, ambiguous-base count, flags and the threshold fields
-  used. There is no separate in-band column — `gc_frac` and `gc_band` are both
-  on the row, so the verdict is derivable, and `flags` states it.
-- `target_site_qc_features.tsv` lists each detected feature with its
-  1-based inclusive transcript coordinates and its offset within the selected
-  region, plus its severity. Use this file to locate and review individual
-  features. It holds only features that have a position — poly-T, homopolymers,
-  tandem repeats and stop codons; GC and entropy describe the whole insert and
-  live in the summary row alone.
-- `target_site_qc.md` is a readable report with the summary and per-region
-  details.
+The run-flag counts are **identical** between the two, which is the check that widening
+the GC band did not leak into the homopolymer scans.
 
-All reported coordinates follow the same 1-based inclusive convention as
-`target_site_selection.tsv`.
+At 10-90%, GC is no longer doing real work: only 77 guides fall outside the band, because
+the observed GC range across all 28,032 guides is 0.033 to 0.967. Of the 12,395 guides
+still flagged, 12,389 are caught by a run flag — so **only 6 guides are rejected on GC
+alone**. This is effectively a homopolymer-only filter, and passing is capped at 55.8% by
+the run flags no matter how wide GC is opened.
+
+So the ~23 percentage points between the two runs is the cost of the 40-60% band
+specifically, and the remaining 44% rejection is structural: it cannot be recovered by
+relaxing GC, only by relaxing the homopolymer thresholds or accepting the runs.
+
+## Output naming
+
+QC outputs are named with their parameters, since the thresholds are what make two runs
+different:
+
+```
+guide_qc.tsv                      defaults: GC 0.40-0.60, T>=4, V>=4
+guide_qc_gc{min}-{max}_t{N}_v{N}  explicit, GC as percent to avoid dots in the filename
+guide_qc_gc10-90_t4_v4.tsv        e.g. GC 0.10-0.90, T>=4, V>=4
+```
+
+## Carrying the filter into the plots
+
+`scripts/plot_scatterlines.py --drop-qc-flagged` drops flagged guides from the efficacy
+scatters. It recomputes QC from the `spacer_seq` column with the same `seqqc.check_guide`
+rather than joining `guide_qc.tsv`, so a plot can never be filtered against a stale QC
+run. Thresholds are set with the same flag names.
+
+```bash
+python scripts/plot_scatterlines.py \
+    --blastn results/blastn/siRNA_targetSeq.blastn \
+    --predictions results/pik3/pik3-predictions.csv \
+    --genbank-dir data/pik3-iso \
+    --output-dir results/plots-qc/filtered \
+    --drop-qc-flagged
+```
+
+The x-axis is unaffected by filtering — transcript length is taken before the filter — so
+a QC-poor stretch reads as *filtered out* rather than as uncovered.
+
+At the default band, coverage of the six siRNA sites mapped to the **PI3K** transcripts
+survives **unevenly**. Each site is overlapped by 48 guides before filtering:
+
+| siRNA | transcript | site | surviving QC |
+|---|---|---|---|
+| PIK3CD_1_ss | NM_005026.5 | 543-561 | 39 / 48 (81%) |
+| PIK3CD_2_ss | NM_005026.5 | 3254-3272 | 39 / 48 (81%) |
+| PIK3CG_1_ss | NM_002649.3 | 1087-1105 | 30 / 48 (63%) |
+| PIK3CD_3_ss | NM_005026.5 | 3286-3304 | 21 / 48 (44%) |
+| PIK3CG_3_ss | NM_002649.3 | 2940-2958 | 17 / 48 (35%) |
+| PIK3CG_2_ss | NM_002649.3 | 2035-2053 | 9 / 48 (19%) |
+
+No site is wiped out — every one keeps at least 9 guides — but the range is 19% to 81%,
+so the filter is not a uniform thinning. Local GC and run content decides how much choice
+is left at each site, and `PIK3CG_2_ss` has about a fifth of the headroom `PIK3CD_1_ss`
+does. Worth checking survival at a site before concluding a region is poorly served.
+
+PIK3CA and PIK3CB have no siRNA mapped in `siRNA_targetSeq.blastn`, so this says nothing
+about them.
+
+# QC filter: PPIB (NM_000942.5)
+
+PPIB was scanned with the same two bands, as a single-gene control. It is a much smaller
+set — 893 nt giving **864 guides** at k=30, step=1 — and the guide FASTA had to be
+generated first, since `results/ppib/` held only `tiles.tsv` and the predictions:
+
+```bash
+# guides.fasta for ppib (tiles.tsv already existed and was left alone)
+python scripts/tile_transcripts.py --input-dir data/ppib \
+    --output /tmp/ppib-tiles-check.tsv --input-type mrna -k 30 --step 1 \
+    --fasta-out results/ppib/guides.fasta
+
+python scripts/check_guides.py --guides results/ppib/guides.fasta \
+    --output results/ppib/guide_qc.tsv
+
+python scripts/check_guides.py --guides results/ppib/guides.fasta \
+    --gc-min 0.1 --gc-max 0.9 \
+    --output results/ppib/guide_qc_gc10-90_t4_v4.tsv
+```
+
+The re-tiling was written to a scratch path and diffed against the committed
+`results/ppib/tiles.tsv` — identical — and `guides.fasta` was checked to match the
+`spacer_seq` column of `ppib-predictions.csv` tile-for-tile, so the QC applies to exactly
+the guides the predictions describe.
+
+| | run 1 (0.40-0.60) | run 2 (0.10-0.90) |
+|---|---|---|
+| **passing** | 367 (42.5%) | **522 (60.4%)** |
+| `gc_low` | 82 | 0 |
+| `gc_high` | 235 | 0 |
+| `homopolymer_t` | 85 | 85 |
+| `homopolymer_v` | 284 | 284 |
+
+## PPIB is GC-rich, so the band fails it from the opposite side
+
+This is the main result, and it inverts the PI3K finding:
+
+| | PI3K (4 transcripts) | PPIB |
+|---|---|---|
+| guides | 28,032 | 864 |
+| mean GC | 0.427 | **0.545** |
+| GC range | 0.033-0.967 | 0.133-0.767 |
+| `gc_low` : `gc_high` | 11,700 : 3,100 | **82 : 235** |
+| passing at 40-60% | 32.7% | 42.5% |
+
+PI3K loses guides for being **too AT-rich**; PPIB loses nearly three times as many to
+`gc_high` as to `gc_low`. So a GC band tuned on one of these datasets is tuned in the
+wrong direction for the other — tightening `--gc-min` costs PI3K dearly and PPIB almost
+nothing, and `--gc-max` the reverse.
+
+The run composition inverts too. PI3K's runs are overwhelmingly A/U (12,463 of 16,059,
+78%); PPIB's 369 runs are led by **G** and are nearly flat:
+
+| run base | PI3K | PPIB |
+|---|---|---|
+| A | 6,252 | 95 |
+| U | 6,211 | 85 |
+| C | 1,906 | 81 |
+| G | 1,690 | **108** |
+
+So `homopolymer_v` means different things in the two datasets: mostly poly-A in PI3K,
+genuinely G-led in PPIB. Only 27 PPIB guides raise both run flags.
+
+## At 10-90%, GC filters nothing at all for PPIB
+
+PPIB's observed GC range (0.133-0.767) sits **entirely inside** the wide band, so run 2
+flags zero guides on GC — not merely few, as with PI3K's 77. Run 2 is therefore a pure
+homopolymer-only filter here, and the 342 guides it drops are exactly the 342 raising a
+run flag.
+
+That makes the split clean: of the 57.5% rejected at the default band, **17.9 percentage
+points are the GC band** (42.5% -> 60.4%) and the remaining 39.6% is structural, from the
+run flags alone.
+
+## Plots
+
+```bash
+python scripts/plot_scatterlines.py \
+    --blastn results/blastn/siRNA_targetSeq.blastn \
+    --predictions results/ppib/ppib-predictions.csv \
+    --genbank-dir data/ppib \
+    --output-dir results/plots-qc/filtered \
+    --drop-qc-flagged
+```
+
+Written to `results/plots-qc/{filtered,unfiltered}/NM_000942.5_PPIB_anno.html`. PPIB has
+its own four siRNAs in `siRNA_targetSeq.blastn` (`ppib_1`-`ppib_4`). Note that table also
+holds spurious **7 bp** hits of the PIK3 siRNAs against PPIB; these lose on bitscore to
+the real 19 bp hits, so the best-HSP-per-siRNA rule assigns each siRNA to the right
+transcript — worth knowing before reading that table by hand.
+
+| siRNA | site | surviving QC |
+|---|---|---|
+| ppib_4 | 232-250 | 17 / 48 (35%) |
+| ppib_1 | 305-323 | 16 / 48 (33%) |
+| ppib_2 | 380-398 | 16 / 48 (33%) |
+| ppib_3 | 285-303 | 13 / 48 (27%) |
+
+Unlike PI3K, where site survival ranged from 19% to 81%, PPIB's four sites are tightly
+clustered at **27-35%** — and all four sit *below* the 42.5% genome-wide pass rate, so the
+siRNA-validated regions are slightly GC-richer and run-heavier than PPIB average.
+
+**Efficacy and QC pull against each other here.** Only 38 of PPIB's 129 guides above 0.9
+predicted efficacy survive QC (29.5%), against a 42.5% overall pass rate — so the
+high-efficacy guides are *disproportionately* QC-poor. PI3K shows the opposite, mild
+trend (36.5% of its >0.9 guides survive, against 32.7% overall). With 38 guides left
+above 0.9, PPIB still has workable candidates, but the margin is much thinner than the
+raw count suggests.

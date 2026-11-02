@@ -10,7 +10,7 @@ Insert scale -- GC, poly-T, repeats, stop codons
     the **whole insert**, because that is what gets cloned: these numbers
     describe the fragment going into the construct, not the individual spacers
     that will later be chosen from inside it.
-Guide scale -- GC band, homopolymer runs
+Guide scale -- GC band, T runs, V runs
     Measured over one candidate guide, asked of the guide itself. This is
     deliberately *not* a sliding window over an insert: a window is a guess at
     where a guide might go, whereas a guide is a sequence someone has committed
@@ -21,7 +21,9 @@ The two scales do not share thresholds. A run of 4 identical bases is
 unremarkable in 2 kb of insert and disqualifying in a 30 nt spacer, and the GC
 band that an insert must merely sit inside is much wider than the band a guide
 is held to -- hence `DEFAULT_GC_MIN`/`DEFAULT_GC_MAX` for the insert and the
-separate `DEFAULT_GUIDE_GC_*` for a guide. They do share *scanners*:
+separate `DEFAULT_GUIDE_GC_*` for a guide. Both scales do split runs the same
+way, into T and V (IUPAC for A, C or G), because a T/U run and an A/C/G run
+are different liabilities at either scale. They do share *scanners*:
 `check_guide` calls the same `gc_fraction` and `homopolymer_runs` the insert
 checks use, so the two scales cannot disagree about what a run or a GC fraction
 is, only about which values are acceptable.
@@ -78,12 +80,21 @@ DEFAULT_REPEAT_COPIES = 3
 
 # Guide scale. Separate from the insert thresholds above on purpose: see the
 # module docstring. A 30 nt spacer is held to a tighter GC band and a shorter
-# homopolymer than 2 kb of insert, and all four bases count for a guide --
-# there is no poly-T scan to hand T off to, because a guide's U run is a
-# property of the spacer, not a U6 termination signal in the construct.
+# homopolymer than 2 kb of insert.
+#
+# Runs are split by base the same way the insert scale splits them, into T and
+# V (IUPAC for A, C or G -- every base that is not T). The two are different
+# liabilities: a run of T/U in the spacer is the U6 premature-termination
+# signal, while a run of A, C or G is a synthesis and folding problem. Scoring
+# them under one flag would hide which of the two a guide actually has. Both
+# default to 4, so splitting the flag changes what is *reported*, not which
+# guides pass; raise one without the other to act on the difference.
+GUIDE_T_BASES = "T"             # U is normalised to T before scanning
+GUIDE_V_BASES = "ACG"
 DEFAULT_GUIDE_GC_MIN = 0.40
 DEFAULT_GUIDE_GC_MAX = 0.60
-DEFAULT_GUIDE_HOMOPOLYMER_MIN = 4
+DEFAULT_GUIDE_HOMOPOLYMER_T_MIN = 4
+DEFAULT_GUIDE_HOMOPOLYMER_V_MIN = 4
 
 STOP_CODONS = ("TAA", "TAG", "TGA")
 UNAMBIGUOUS = frozenset("ACGT")
@@ -288,14 +299,27 @@ class GuideQC(NamedTuple):
     sequence: str
     gc: float
     n_ambiguous: int
-    runs: tuple[Run, ...]
+    runs_t: tuple[Run, ...]
+    runs_v: tuple[Run, ...]
     gc_min: float
     gc_max: float
-    homopolymer_min: int
+    homopolymer_t_min: int
+    homopolymer_v_min: int
 
     @property
     def length(self) -> int:
         return len(self.sequence)
+
+    @property
+    def runs(self) -> tuple[Run, ...]:
+        """Both kinds of run together, in position order.
+
+        For the detail column and for anything that wants the runs without
+        caring which flag they raised. The two lists cannot overlap -- a run
+        is of one base, and T and V partition the alphabet -- so merging them
+        on ``start`` is unambiguous.
+        """
+        return tuple(sorted(self.runs_t + self.runs_v, key=lambda r: r.start))
 
     @property
     def gc_low(self) -> bool:
@@ -316,29 +340,50 @@ class GuideQC(NamedTuple):
         """
         return self.gc_min <= self.gc <= self.gc_max
 
+    @staticmethod
+    def _longest(runs: Sequence[Run]) -> Run | None:
+        """The longest run, earliest one first on a tie; None if there are none."""
+        return min(runs, key=lambda r: (-r.length, r.start), default=None)
+
     @property
     def longest_run(self) -> Run | None:
-        """The longest homopolymer run, earliest one first on a tie."""
-        return min(
-            self.runs, key=lambda r: (-r.length, r.start), default=None
-        )
+        """The longest run of either kind."""
+        return self._longest(self.runs)
+
+    @property
+    def longest_run_t(self) -> Run | None:
+        return self._longest(self.runs_t)
+
+    @property
+    def longest_run_v(self) -> Run | None:
+        return self._longest(self.runs_v)
 
     @property
     def flags(self) -> tuple[str, ...]:
         """Why this guide is flagged; empty for a guide that passes.
 
-        ``gc_low`` and ``gc_high`` are separate rather than one
-        ``gc_out_of_band``, because the two have opposite remedies and a count
-        of each is what says whether a band is set wrong or a transcript is
-        simply GC-skewed.
+        Four flags, in two pairs, each split for the same reason: the halves
+        have different remedies, so collapsing them would hide which problem a
+        guide actually has.
+
+        ``gc_low`` / ``gc_high``
+            Rather than one ``gc_out_of_band``. A count of each says whether a
+            band is set wrong or a transcript is simply GC-skewed.
+        ``homopolymer_t`` / ``homopolymer_v``
+            Rather than one ``homopolymer``. A T/U run is the U6
+            premature-termination signal; a V run (A, C or G) is a synthesis
+            and folding problem. ``homopolymer_t`` covers U as well as T,
+            since the scan normalises the two.
         """
         flags = []
         if self.gc_low:
             flags.append("gc_low")
         if self.gc_high:
             flags.append("gc_high")
-        if self.runs:
-            flags.append("homopolymer")
+        if self.runs_t:
+            flags.append("homopolymer_t")
+        if self.runs_v:
+            flags.append("homopolymer_v")
         return tuple(flags)
 
     @property
@@ -347,13 +392,18 @@ class GuideQC(NamedTuple):
 
 
 def guide_homopolymer_runs(
-    sequence: str, min_length: int = DEFAULT_GUIDE_HOMOPOLYMER_MIN
+    sequence: str,
+    min_length: int = DEFAULT_GUIDE_HOMOPOLYMER_V_MIN,
+    bases: str = "ACGT",
 ) -> list[Run]:
     """Runs of >= ``min_length`` identical bases, named in the input alphabet.
 
-    A thin wrapper over `homopolymer_runs` over **all four** bases -- there is
-    no poly-T scan at guide scale to report T separately, so T is not excluded
-    the way it is for an insert.
+    A thin wrapper over `homopolymer_runs`. ``bases`` restricts which runs come
+    back: `GUIDE_T_BASES` for the T/U runs behind ``homopolymer_t``,
+    `GUIDE_V_BASES` for the A/C/G runs behind ``homopolymer_v``, and the
+    default for both at once. Pass U in ``bases`` and nothing matches -- the
+    scan works in T, so ask for ``"T"`` and an RNA guide's U runs come back
+    (named ``U``, per below).
 
     The wrapper exists for the alphabet. `homopolymer_runs` normalises U to T
     before scanning, which is right for finding the run but wrong for naming
@@ -370,7 +420,7 @@ def guide_homopolymer_runs(
     """
     original = sequence.upper()
     runs = []
-    for run in homopolymer_runs(original, min_length, bases="ACGT"):
+    for run in homopolymer_runs(original, min_length, bases=bases):
         spelt = set(original[run.start - 1:run.end])
         base = spelt.pop() if len(spelt) == 1 else run.base
         runs.append(Run(base, run.start, run.end))
@@ -382,9 +432,15 @@ def check_guide(
     sequence: str,
     gc_min: float = DEFAULT_GUIDE_GC_MIN,
     gc_max: float = DEFAULT_GUIDE_GC_MAX,
-    homopolymer_min: int = DEFAULT_GUIDE_HOMOPOLYMER_MIN,
+    homopolymer_t_min: int = DEFAULT_GUIDE_HOMOPOLYMER_T_MIN,
+    homopolymer_v_min: int = DEFAULT_GUIDE_HOMOPOLYMER_V_MIN,
 ) -> GuideQC:
     """QC one guide: GC against a band, and homopolymer runs against a length.
+
+    Runs are scanned twice, once for T/U and once for V (A, C or G), against
+    their own thresholds -- see `GuideQC.flags` for why the two are kept
+    apart. The two scans partition the alphabet, so no run is counted twice
+    and none is missed.
 
     Accepts either alphabet, since `gc_fraction` counts U with T. The sequence
     is kept verbatim on the record apart from upper-casing, following the
@@ -402,8 +458,14 @@ def check_guide(
         sequence=sequence.upper(),
         gc=gc,
         n_ambiguous=ambiguous,
-        runs=tuple(guide_homopolymer_runs(sequence, homopolymer_min)),
+        runs_t=tuple(
+            guide_homopolymer_runs(sequence, homopolymer_t_min, GUIDE_T_BASES)
+        ),
+        runs_v=tuple(
+            guide_homopolymer_runs(sequence, homopolymer_v_min, GUIDE_V_BASES)
+        ),
         gc_min=gc_min,
         gc_max=gc_max,
-        homopolymer_min=homopolymer_min,
+        homopolymer_t_min=homopolymer_t_min,
+        homopolymer_v_min=homopolymer_v_min,
     )

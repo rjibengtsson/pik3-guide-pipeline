@@ -13,16 +13,25 @@ and the flags those raise:
     GC outside the band, by default 40-60%. The two are separate flags rather
     than one ``gc_out_of_band`` because they have opposite remedies, and the
     split is what tells a badly set band from a GC-skewed transcript.
-``homopolymer``
-    A run of 4 or more identical bases anywhere in the guide -- GGGG, UUUU,
-    AAAA, CCCC. All four bases count: unlike the insert-scale check in
-    check_target_sites.py there is no separate poly-T scan to hand T off to,
-    because a run inside a spacer is a property of that spacer rather than a
-    U6 termination signal in the construct.
+``homopolymer_t``
+    A run of 4 or more T -- or U, the same base in an RNA guide: UUUU. This is
+    the U6 premature-termination signal, so it is a transcription problem.
+``homopolymer_v``
+    A run of 4 or more V, IUPAC for A, C or G: GGGG, AAAA, CCCC. A synthesis
+    and folding problem rather than a termination one.
+
+The two run flags are **deliberately separate**, and have their own thresholds
+(``--homopolymer-t-min``, ``--homopolymer-v-min``). They are the same split the
+insert-scale check in check_target_sites.py makes, for the same reason: the two
+have different causes and different remedies, so one combined ``homopolymer``
+count cannot say which problem a guide has. Both default to 4, so the split
+changes what is *reported*, not which guides pass -- raise one without the
+other to act on the difference.
 
 A guide with no flags has an empty ``flags`` cell and ``n_flags`` 0. There is
 no separate pass/fail column: the verdict is derivable from the row, and both
-thresholds are echoed into every row (``gc_band``, ``homopolymer_min``) so a
+thresholds are echoed into every row (``gc_band``, ``homopolymer_t_min``,
+``homopolymer_v_min``) so a
 flag can be audited without knowing how this was invoked. ``--flagged-only``
 drops the passing rows if the flagged ones are all that is wanted; the default
 writes every guide, so the file can be joined back onto ``tiles.tsv`` on
@@ -61,12 +70,15 @@ COLUMNS = (
     "guide_id", "length", "sequence",
     "gc_frac", "gc_percent", "gc_band",
     "n_ambiguous",
-    "n_homopolymer_runs", "longest_homopolymer", "longest_homopolymer_base",
-    "longest_homopolymer_at", "homopolymer_min", "homopolymer_runs",
+    "n_homopolymer_t", "longest_homopolymer_t", "longest_homopolymer_t_at",
+    "homopolymer_t_min",
+    "n_homopolymer_v", "longest_homopolymer_v", "longest_homopolymer_v_base",
+    "longest_homopolymer_v_at", "homopolymer_v_min",
+    "homopolymer_runs",
     "flags", "n_flags",
 )
 
-FLAG_NAMES = ("gc_low", "gc_high", "homopolymer")
+FLAG_NAMES = ("gc_low", "gc_high", "homopolymer_t", "homopolymer_v")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -99,10 +111,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "(default: %(default)s)",
     )
     parser.add_argument(
-        "--homopolymer-min", type=int,
-        default=seqqc.DEFAULT_GUIDE_HOMOPOLYMER_MIN, metavar="N",
-        help="shortest run of identical bases that raises the homopolymer "
-        "flag, counted over all four bases (default: %(default)s)",
+        "--homopolymer-t-min", type=int,
+        default=seqqc.DEFAULT_GUIDE_HOMOPOLYMER_T_MIN, metavar="N",
+        help="shortest run of T (or U) that raises homopolymer_t, the U6 "
+        "premature-termination signal (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--homopolymer-v-min", type=int,
+        default=seqqc.DEFAULT_GUIDE_HOMOPOLYMER_V_MIN, metavar="N",
+        help="shortest run of V -- IUPAC for A, C or G -- that raises "
+        "homopolymer_v, a synthesis and folding problem rather than a "
+        "termination one (default: %(default)s)",
     )
     parser.add_argument(
         "--flagged-only", action="store_true",
@@ -116,11 +135,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             f"--gc-min ({args.gc_min}) is above --gc-max ({args.gc_max}), so "
             "no GC can pass"
         )
-    if args.homopolymer_min < 2:
-        parser.error(
-            f"--homopolymer-min must be at least 2, got {args.homopolymer_min}: "
-            "a run of 1 is every base, so every guide would be flagged"
-        )
+    for flag, value in (("--homopolymer-t-min", args.homopolymer_t_min),
+                        ("--homopolymer-v-min", args.homopolymer_v_min)):
+        if value < 2:
+            parser.error(
+                f"{flag} must be at least 2, got {value}: a run of 1 is every "
+                "base, so every guide would be flagged"
+            )
     return args
 
 
@@ -147,7 +168,8 @@ def read_guides(path: str) -> list[tuple[str, str]]:
 
 def row_for(result: seqqc.GuideQC) -> dict:
     """One output row. ``result`` carries its own thresholds, so this adds none."""
-    longest = result.longest_run
+    longest_t = result.longest_run_t
+    longest_v = result.longest_run_v
     return {
         "guide_id": result.guide_id,
         "length": result.length,
@@ -158,14 +180,24 @@ def row_for(result: seqqc.GuideQC) -> dict:
         "gc_percent": round(100 * result.gc, 2),
         "gc_band": f"{result.gc_min}-{result.gc_max}",
         "n_ambiguous": result.n_ambiguous,
-        "n_homopolymer_runs": len(result.runs),
-        "longest_homopolymer": longest.length if longest else 0,
-        "longest_homopolymer_base": longest.base if longest else "",
-        "longest_homopolymer_at": longest.start if longest else "",
-        "homopolymer_min": result.homopolymer_min,
-        # Every run, not just the longest: a guide with three separate 4-runs
-        # is a different proposition from one with a single 4-run, and the
-        # longest-only columns cannot tell them apart.
+        # No longest_homopolymer_t_base: a T run's base is T or U depending
+        # only on the input alphabet, so the column would be constant down the
+        # file and tell no one anything. The V column is kept because A, C and
+        # G are genuinely different answers.
+        "n_homopolymer_t": len(result.runs_t),
+        "longest_homopolymer_t": longest_t.length if longest_t else 0,
+        "longest_homopolymer_t_at": longest_t.start if longest_t else "",
+        "homopolymer_t_min": result.homopolymer_t_min,
+        "n_homopolymer_v": len(result.runs_v),
+        "longest_homopolymer_v": longest_v.length if longest_v else 0,
+        "longest_homopolymer_v_base": longest_v.base if longest_v else "",
+        "longest_homopolymer_v_at": longest_v.start if longest_v else "",
+        "homopolymer_v_min": result.homopolymer_v_min,
+        # Every run of both kinds, in position order -- not just the longest:
+        # a guide with three separate 4-runs is a different proposition from
+        # one with a single 4-run, and the longest-only columns cannot tell
+        # them apart. The base names which flag each run raised, since T and V
+        # partition the alphabet.
         "homopolymer_runs": ";".join(
             f"{run.base}:{run.start}-{run.end}(x{run.length})"
             for run in result.runs
@@ -211,7 +243,8 @@ def main(argv: list[str] | None = None) -> int:
             sequence,
             gc_min=args.gc_min,
             gc_max=args.gc_max,
-            homopolymer_min=args.homopolymer_min,
+            homopolymer_t_min=args.homopolymer_t_min,
+            homopolymer_v_min=args.homopolymer_v_min,
         )
         for guide_id, sequence in guides
     ]
@@ -234,15 +267,15 @@ def main(argv: list[str] | None = None) -> int:
     print(f"guides read:  {len(results)} from {args.guides}", file=sys.stderr)
     print(f"GC band:      {args.gc_min}-{args.gc_max} (inclusive)",
           file=sys.stderr)
-    print(f"homopolymer:  runs of >= {args.homopolymer_min} identical bases",
-          file=sys.stderr)
+    print(f"homopolymer:  T/U runs >= {args.homopolymer_t_min}, "
+          f"V (A/C/G) runs >= {args.homopolymer_v_min}", file=sys.stderr)
     print(f"passing:      {len(results) - len(flagged)}", file=sys.stderr)
     print(f"flagged:      {len(flagged)}", file=sys.stderr)
     for name in FLAG_NAMES:
         # Guides can raise more than one flag, so these do not sum to the
         # flagged total.
         count = sum(1 for r in results if name in r.flags)
-        print(f"  {name:<12}{count}", file=sys.stderr)
+        print(f"  {name:<16}{count}", file=sys.stderr)
     ambiguous = sum(1 for r in results if r.n_ambiguous)
     if ambiguous:
         print(

@@ -275,7 +275,8 @@ class QcDrop(NamedTuple):
     dropped_per_transcript: dict[str, int]
     gc_min: float
     gc_max: float
-    homopolymer_min: int
+    homopolymer_t_min: int
+    homopolymer_v_min: int
 
     @property
     def n_kept(self) -> int:
@@ -290,7 +291,8 @@ def drop_qc_flagged(
     df: pd.DataFrame,
     gc_min: float = seqqc.DEFAULT_GUIDE_GC_MIN,
     gc_max: float = seqqc.DEFAULT_GUIDE_GC_MAX,
-    homopolymer_min: int = seqqc.DEFAULT_GUIDE_HOMOPOLYMER_MIN,
+    homopolymer_t_min: int = seqqc.DEFAULT_GUIDE_HOMOPOLYMER_T_MIN,
+    homopolymer_v_min: int = seqqc.DEFAULT_GUIDE_HOMOPOLYMER_V_MIN,
 ) -> QcDrop:
     """Drop guides whose spacer fails guide-level QC, keeping row order.
 
@@ -301,9 +303,10 @@ def drop_qc_flagged(
     already in the predictions file, so there is one source of truth and no way
     to filter a plot against a stale QC run.
 
-    A guide is dropped if it raises **any** flag -- ``gc_low``, ``gc_high`` or
-    ``homopolymer``. The returned counts are per flag and overlap, since one
-    guide can raise two.
+    A guide is dropped if it raises **any** flag -- ``gc_low``, ``gc_high``,
+    ``homopolymer_t`` or ``homopolymer_v``. The returned counts are per flag
+    and overlap, since one guide can raise several, so they do not sum to
+    ``n_dropped``.
 
     Call `transcript_lengths` on the **unfiltered** frame before this. The axis
     length is the largest tile end, so taking it afterwards would shrink every
@@ -316,7 +319,8 @@ def drop_qc_flagged(
             str(spacer),
             gc_min=gc_min,
             gc_max=gc_max,
-            homopolymer_min=homopolymer_min,
+            homopolymer_t_min=homopolymer_t_min,
+            homopolymer_v_min=homopolymer_v_min,
         ).flags
         for tile_id, spacer in zip(df["tile_id"], df["spacer_seq"])
     ]
@@ -337,7 +341,8 @@ def drop_qc_flagged(
         ),
         gc_min=gc_min,
         gc_max=gc_max,
-        homopolymer_min=homopolymer_min,
+        homopolymer_t_min=homopolymer_t_min,
+        homopolymer_v_min=homopolymer_v_min,
     )
 
 

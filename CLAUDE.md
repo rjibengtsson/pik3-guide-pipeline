@@ -22,7 +22,7 @@ Everything must run inside the project conda env; see **Environment** below for 
 mamba env create -f environment.yml   # or: conda env create -f environment.yml
 conda activate pik3-guide
 
-# tests (320, all passing; needs bwa and blastn, else some skip)
+# tests (342, all passing; needs bwa and blastn, else some skip)
 python -m unittest discover -s test -v
 
 # stage 1, exactly as the current results/pik3/ was produced (git-ignored; rerun to recreate)
@@ -394,18 +394,32 @@ two are not interchangeable (see **Outputs**): GC and homopolymer content are be
 judged of the guide that gets synthesised, and `tiles.fasta` holds targets. Headers are
 `tile_id`, so the output joins back onto `tiles.tsv` on `guide_id`.
 
-### The three flags
+### The four flags
 
 | flag | raised when |
 |---|---|
 | `gc_low` | GC fraction below `--gc-min`, default 0.40 |
 | `gc_high` | GC fraction above `--gc-max`, default 0.60 |
-| `homopolymer` | a run of >= `--homopolymer-min` identical bases, default 4 |
+| `homopolymer_t` | a run of >= `--homopolymer-t-min` T **or U**, default 4 |
+| `homopolymer_v` | a run of >= `--homopolymer-v-min` V — IUPAC for A, C or G — default 4 |
 
 `gc_low` and `gc_high` are deliberately **two flags rather than one
 `gc_out_of_band`** — they have opposite remedies, and the split is what distinguishes a
 badly set band from a GC-skewed transcript. They are mutually exclusive; a guide can
-still raise one of them together with `homopolymer`.
+still raise one of them together with either run flag.
+
+`homopolymer_t` and `homopolymer_v` are split for the same kind of reason, and it is the
+same split the insert-scale check makes (`bases="T"` and `bases="ACG"`). The two are
+different liabilities: a run of T/U is the **U6 premature-termination signal**, a
+transcription problem; a run of A, C or G is a **synthesis and folding** problem. One
+combined count cannot say which a guide has. Unlike the GC pair they are *not* mutually
+exclusive — a guide can raise both, and 1,644 of the real ones do.
+
+Both default to 4, so splitting the flag changed what is **reported**, not which guides
+pass: the passing count is 9,154 before and after. Raise one without the other to act on
+the difference. `GUIDE_T_BASES` and `GUIDE_V_BASES` partition ACGT, asserted by
+`test_t_and_v_bases_partition_the_alphabet`, so no run raises both flags and none escapes
+both.
 
 Band edges are **inclusive**, matching the insert-scale check: exactly 40.0% GC passes a
 0.40 minimum. The edge is reachable — 12 G/C in a 30 nt guide is exactly 0.40 — so which
@@ -420,7 +434,8 @@ the way it is there.
 
 ### Thresholds differ by scale, scanners do not
 
-`DEFAULT_GUIDE_GC_MIN`/`MAX` (0.40–0.60) and `DEFAULT_GUIDE_HOMOPOLYMER_MIN` (4) are
+`DEFAULT_GUIDE_GC_MIN`/`MAX` (0.40–0.60) and `DEFAULT_GUIDE_HOMOPOLYMER_T_MIN`/`V_MIN`
+(4 and 4) are
 separate constants from the insert's `DEFAULT_GC_MIN`/`MAX` (0.30–0.70) and
 `DEFAULT_HOMOPOLYMER_MIN` (5), and `test_guide_scale_thresholds_are_not_the_insert_scale_ones`
 asserts they stay distinct. A run of 4 is unremarkable in 2 kb of insert and
@@ -452,22 +467,34 @@ is still right, and the span is the actionable part.
 ### Output columns
 
 `guide_qc.tsv` — one row per guide, every guide by default. Columns are `guide_id,
-length, sequence, gc_frac, gc_percent, gc_band, n_ambiguous, n_homopolymer_runs,
-longest_homopolymer, longest_homopolymer_base, longest_homopolymer_at, homopolymer_min,
-homopolymer_runs, flags, n_flags`.
+length, sequence, gc_frac, gc_percent, gc_band, n_ambiguous, n_homopolymer_t,
+longest_homopolymer_t, longest_homopolymer_t_at, homopolymer_t_min, n_homopolymer_v,
+longest_homopolymer_v, longest_homopolymer_v_base, longest_homopolymer_v_at,
+homopolymer_v_min, homopolymer_runs, flags, n_flags`.
+
+The run columns come in **two sets**, one per flag, so a count can be read against the
+threshold that produced it.
 
 ```
-guide_id             sequence                        gc_frac  n_homopolymer_runs  homopolymer_runs       flags               n_flags
-NM_002649.3:1-30     UUUCAGAUAAUCUAGCCGAGAAGGAAGUGC  0.4333   0                                                              0
-NM_002649.3:121-150  AAAAAUGUGAUGCACCUGCAAAACUAUUGC  0.3667   2                   A:1-5(x5);A:20-23(x4)  gc_low;homopolymer  2
+guide_id             sequence                        gc_frac  n_hp_t  n_hp_v  homopolymer_runs                               flags
+NM_002649.3:1-30     UUUCAGAUAAUCUAGCCGAGAAGGAAGUGC  0.4333   0       0                                                      
+NM_002649.3:142-171  UUUUCCUCCCAAAACAAAAACAAAAAUGUG  0.3667   1       3       U:1-4(x4);A:11-14(x4);A:16-20(x5);A:22-26(x5)  gc_low;homopolymer_t;homopolymer_v
 ```
+
+(`n_hp_t`/`n_hp_v` abbreviated here; the real headers are `n_homopolymer_t` and
+`n_homopolymer_v`.)
 
 - **There is no pass/fail column.** `n_flags` 0 is the verdict, and both thresholds are
-  echoed into every row (`gc_band`, `homopolymer_min`) so a flag can be audited from its
+  echoed into every row (`gc_band`, `homopolymer_t_min`, `homopolymer_v_min`) so a flag
+  can be audited from its
   own row without knowing how the CLI was invoked — the same convention as
   `target_site_qc.tsv`. `test_the_verdict_is_derivable_from_the_row` reproduces `n_flags`
   from the other columns.
-- `homopolymer_runs` lists **every** run, not only the longest: a guide with three
+- **There is no `longest_homopolymer_t_base` column.** A T run's base is T or U by input
+  alphabet alone, so the column would be constant down the whole file. The V column is
+  kept because A, C and G are genuinely different answers.
+- `homopolymer_runs` lists **every** run of **both** classes in position order, not only
+  the longest: a guide with three
   separate 4-runs is a different proposition from one with a single 4-run, and the
   `longest_*` columns cannot tell them apart. Format is
   `base:start-end(xlength)`, `;`-joined.
@@ -488,7 +515,8 @@ guide, not the written subset, so the passing fraction is still readable off a
 Hard errors: a missing or empty FASTA, a duplicate `guide_id` (the output is keyed on it,
 so a duplicate would make a downstream join silently pick one of two rows — the same
 reasoning as duplicate transcript ids in stage 1), an inverted GC band, and
-`--homopolymer-min` below 2 (a run of 1 is every base, so every guide would be flagged).
+either `--homopolymer-t-min` or `--homopolymer-v-min` below 2 (a run of 1 is every base,
+so every guide would be flagged).
 
 ### Finding: only a third of the PI3K guides pass both checks
 
@@ -499,7 +527,9 @@ Over the 28,032 guides in `results/pik3/guides.fasta`:
 | passing both checks | 9,154 (32.7%) |
 | `gc_low` (< 40%) | 11,700 |
 | `gc_high` (> 60%) | 3,100 |
-| `homopolymer` (>= 4) | 12,389 |
+| `homopolymer_t` (>= 4 T/U) | 5,606 |
+| `homopolymer_v` (>= 4 A/C/G) | 8,427 |
+| either run flag | 12,389 |
 
 The flag counts do not sum to the flagged total (18,878) because a guide can raise two.
 Verified against an independent oracle written without importing `seqqc` — plain
@@ -507,24 +537,31 @@ Verified against an independent oracle written without importing `seqqc` — pla
 exactly.
 
 Two things worth knowing before using this as a filter. **GC-low dominates**: the four
-PI3K transcripts are AT-rich enough at 30 nt that nearly three times as many guides fall
+PI3K transcripts are AT-rich enough at 30 nt that nearly four times as many guides fall
 below the band as above it, so tightening `--gc-min` costs far more candidates than
-tightening `--gc-max`. And the **homopolymer flag is the single largest cause of
+tightening `--gc-max`. And the **run flags together are the single largest cause of
 rejection** at 44% of guides — and it is not the `GGGG` the threshold is usually written
 for. Of the 16,059 runs found, 12,463 (78%) are `A` or `U`:
 
-| run base | runs |
-|---|---|
-| A | 6,252 |
-| U | 6,211 |
-| C | 1,906 |
-| G | 1,690 |
+| run base | runs | flag |
+|---|---|---|
+| A | 6,252 | `homopolymer_v` |
+| U | 6,211 | `homopolymer_t` |
+| C | 1,906 | `homopolymer_v` |
+| G | 1,690 | `homopolymer_v` |
 
-So raising `--homopolymer-min` to 5 recovers mostly AT-rich guides, which are the same
-ones `gc_low` is already rejecting. Whether the A/U runs are concentrated in the UTRs and
-the PIK3CG tandem repeat has **not** been checked; the run offsets in
-`homopolymer_runs` are guide-relative, so answering that means joining back onto
-`tiles.tsv` for the transcript coordinate.
+This is what the split is for. `homopolymer_v` is dominated by poly-A, not poly-G, so the
+two flags answer different questions: `homopolymer_t` (5,606 guides) is a real U6
+termination risk, while most of `homopolymer_v` (8,427) is poly-A in AT-rich sequence
+rather than the G-quadruplex-ish liability the flag is usually reached for. 1,644 guides
+raise both. The three numbers reconcile with the old combined count:
+3,962 T-only + 6,783 V-only + 1,644 both = 12,389.
+
+Raising either threshold to 5 recovers mostly AT-rich guides, which are the same ones
+`gc_low` is already rejecting. Whether the A/U runs are concentrated in the UTRs and the
+PIK3CG tandem repeat has **not** been checked; the run offsets in `homopolymer_runs` are
+guide-relative, so answering that means joining back onto `tiles.tsv` for the transcript
+coordinate.
 
 Combined with the stage 2 finding that all 28,032 tiles are `specific`, there is no
 tension between the two filters here — every surviving guide is still single-gene. These
@@ -538,7 +575,7 @@ above before plotting. The filter lives in
 returning a `QcDrop` with the surviving frame, per-flag counts and per-transcript drop
 counts; [test/test_visualise_scatterlines.py](test/test_visualise_scatterlines.py) covers
 it. Thresholds come from the same `seqqc` constants and are overridable with `--gc-min`,
-`--gc-max` and `--homopolymer-min`.
+`--gc-max`, `--homopolymer-t-min` and `--homopolymer-v-min`.
 
 ```bash
 python scripts/plot_scatterlines.py \
@@ -587,7 +624,7 @@ site is overlapped by 48 guides before filtering:
 
 **No site is wiped out** — every one keeps at least 9 guides, which is enough to pick
 from. But the range is 19% to 81%, so the filter is not a uniform thinning: a site's
-local GC and homopolymer content decides how much choice is left there, and
+local GC and run content decides how much choice is left there, and
 `PIK3CG_2_ss` has about a fifth of the headroom `PIK3CD_1_ss` does. Worth checking
 survival at a site before concluding a region is poorly served.
 
