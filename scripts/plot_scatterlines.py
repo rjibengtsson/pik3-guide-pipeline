@@ -32,8 +32,18 @@ a full tiling -- but it is a **floor**, not a measurement: pass an
 already-filtered predictions file and the axis stops at the last surviving
 guide rather than at the end of the transcript.
 
-Nothing here filters by efficacy. Every row in the predictions file is plotted,
-and the colour scale is pinned to 0-1 so two plots can be compared.
+Nothing here filters by efficacy, and the colour scale is pinned to 0-1 so two
+plots can be compared. The one filter available is ``--drop-qc-flagged``, which
+removes guides failing guide-level QC -- GC outside 40-60%, or a run of 4 or
+more identical bases -- judged by ``seqqc.check_guide`` on the ``spacer_seq``
+column. It is **off by default**: every row is plotted unless it is asked for.
+
+The QC filter recomputes from the spacer rather than joining ``guide_qc.tsv``,
+so there is one source of truth and no way to filter a plot against a stale QC
+run; the two agree by construction. It does **not** shrink the x-axis -- the
+transcript length is taken before the filter, so a QC-poor stretch reads as
+filtered out rather than as absent, which is the whole point of drawing the
+full transcript.
 """
 
 from __future__ import annotations
@@ -53,6 +63,8 @@ from annotation import (  # noqa: E402
     genbank_length,
     gene_symbol_from_genbank,
 )
+import seqqc  # noqa: E402
+
 from visualise_scatterlines import (  # noqa: E402
     DEFAULT_THRESHOLD,
     BLASTN_COLUMNS,
@@ -60,6 +72,7 @@ from visualise_scatterlines import (  # noqa: E402
     PREDICTION_COLUMNS,
     build_guides,
     build_sirnas,
+    drop_qc_flagged,
     plot_scatterlines,
     highlight_category,
     transcript_lengths,
@@ -123,6 +136,33 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "named in the summary.",
     )
     parser.add_argument(
+        "--drop-qc-flagged",
+        action="store_true",
+        help="drop guides that fail guide-level QC before plotting -- GC "
+        "outside the band, or a run of identical bases at or above the "
+        "homopolymer minimum. Off by default, so the plot shows every "
+        "predicted guide unless this is asked for; the stderr summary says "
+        "how many went, per flag and per transcript. The x-axis is unaffected "
+        "either way, because the transcript length is taken before the "
+        "filter.",
+    )
+    parser.add_argument(
+        "--gc-min", type=float, default=seqqc.DEFAULT_GUIDE_GC_MIN, metavar="X",
+        help="lower edge of the acceptable GC band, inclusive, used only with "
+        "--drop-qc-flagged (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--gc-max", type=float, default=seqqc.DEFAULT_GUIDE_GC_MAX, metavar="X",
+        help="upper edge of the acceptable GC band, inclusive, used only with "
+        "--drop-qc-flagged (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--homopolymer-min", type=int,
+        default=seqqc.DEFAULT_GUIDE_HOMOPOLYMER_MIN, metavar="N",
+        help="shortest run of identical bases that disqualifies a guide, used "
+        "only with --drop-qc-flagged (default: %(default)s)",
+    )
+    parser.add_argument(
         "--cdn-plotlyjs",
         action="store_true",
         help="link plotly.js from a CDN (~50 kB per file) instead of embedding "
@@ -157,6 +197,18 @@ def main(argv: list[str] | None = None) -> int:
         if not os.path.isfile(path):
             raise SystemExit(f"error: {flag} {path}: no such file")
 
+    if args.gc_min > args.gc_max:
+        raise SystemExit(
+            f"error: --gc-min ({args.gc_min}) is above --gc-max "
+            f"({args.gc_max}), so no guide could pass QC"
+        )
+    if args.homopolymer_min < 2:
+        raise SystemExit(
+            f"error: --homopolymer-min must be at least 2, got "
+            f"{args.homopolymer_min}: a run of 1 is every base, so every "
+            "guide would be dropped"
+        )
+
     genbank_dirs = args.genbank_dir or []
     for directory in genbank_dirs:
         if not os.path.isdir(directory):
@@ -173,8 +225,30 @@ def main(argv: list[str] | None = None) -> int:
     prediction_df = pd.read_csv(args.predictions, header=0)
     require_columns(prediction_df, PREDICTION_COLUMNS, args.predictions)
 
+    # Before the QC filter, deliberately: the axis length is the largest tile
+    # end, so taking it afterwards would shrink each transcript to its last
+    # surviving guide and make a QC-poor 3' end read as absent rather than as
+    # filtered out. See transcript_lengths in src/visualise_scatterlines.py.
     lengths = transcript_lengths(prediction_df)
-    guides = build_guides(prediction_df, sirnas)
+
+    plotted_df = prediction_df
+    qc = None
+    if args.drop_qc_flagged:
+        qc = drop_qc_flagged(
+            prediction_df,
+            gc_min=args.gc_min,
+            gc_max=args.gc_max,
+            homopolymer_min=args.homopolymer_min,
+        )
+        plotted_df = qc.kept
+        if plotted_df.empty:
+            raise SystemExit(
+                f"error: --drop-qc-flagged removed all {qc.n_input} guides "
+                f"(GC band {qc.gc_min}-{qc.gc_max}, homopolymer >= "
+                f"{qc.homopolymer_min}); nothing would be plotted"
+            )
+
+    guides = build_guides(plotted_df, sirnas)
 
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -183,6 +257,34 @@ def main(argv: list[str] | None = None) -> int:
         f"{len(sirnas)} siRNA site(s) -> {len(guides)} guide-siRNA pairings",
         file=sys.stderr,
     )
+    if qc is not None:
+        print(
+            f"QC filter: GC band {qc.gc_min}-{qc.gc_max} (inclusive), "
+            f"homopolymer runs >= {qc.homopolymer_min}",
+            file=sys.stderr,
+        )
+        print(
+            f"  dropped {qc.n_dropped} of {qc.n_input} guides, "
+            f"{qc.n_kept} plotted ({100 * qc.n_kept / qc.n_input:.1f}%)",
+            file=sys.stderr,
+        )
+        # Per flag, and these overlap: one guide can be both GC-poor and
+        # homopolymeric, so they do not sum to the dropped total.
+        for flag in ("gc_low", "gc_high", "homopolymer"):
+            print(f"    {flag:<12}{qc.by_flag.get(flag, 0)}", file=sys.stderr)
+        for transcript in sorted(lengths):
+            n_dropped = qc.dropped_per_transcript.get(transcript, 0)
+            n_kept = int((plotted_df["transcript_id"] == transcript).sum())
+            print(
+                f"    {transcript:<16}{n_kept} plotted, {n_dropped} dropped",
+                file=sys.stderr,
+            )
+            if not n_kept:
+                print(
+                    f"warning: every guide on {transcript} was dropped; its "
+                    "plot will show the siRNA and annotation lanes only",
+                    file=sys.stderr,
+                )
 
     missing_genbank: list[str] = []
 

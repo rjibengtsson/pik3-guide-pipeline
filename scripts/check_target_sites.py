@@ -38,6 +38,13 @@ Stop codons are reported as counts and positions only -- no frame, no CDS, and
 no flag. Chance alone puts ~94 stop triplets in 2 kb, so "has stop codons"
 would be true of every region, correct ones included. The flags come from GC,
 poly-T and the repeat/entropy checks.
+
+Everything here is a property of the **whole insert**, which is the thing being
+cloned. GC and entropy are single numbers over the region, not scans at spacer
+scale: a 30 nt window is a candidate guide, and judging a guide is a question
+for guide selection, asked of the guides themselves. Features that do have a
+position -- poly-T, homopolymers, tandem repeats, stop codons -- are still
+located, because for those the position is what makes the report actionable.
 """
 
 from __future__ import annotations
@@ -45,7 +52,6 @@ from __future__ import annotations
 import argparse
 import csv
 import os
-import statistics
 import sys
 from typing import Sequence
 
@@ -60,13 +66,12 @@ SUMMARY_COLUMNS = (
     "transcript", "gene", "start", "end",
     "length_declared", "length_actual", "length_matches",
     "n_ambiguous",
-    "gc_frac", "gc_min_window", "gc_max_window", "gc_mean_window", "gc_sd_window",
-    "n_windows_out_of_band", "widest_out_of_band_run", "gc_band",
+    "gc_frac", "gc_band",
     "n_polyT_runs", "longest_polyT", "longest_polyT_at", "polyT_min",
     "n_homopolymers", "longest_homopolymer", "longest_homopolymer_base",
     "homopolymer_min",
     "n_tandem_repeats", "longest_tandem_repeat", "longest_tandem_motif",
-    "min_window_entropy", "min_entropy_at", "n_windows_low_entropy", "entropy_min",
+    "entropy", "entropy_min",
     "n_stop_TAA", "n_stop_TAG", "n_stop_TGA", "n_stops_total", "stops_per_100nt",
     "flags", "n_flags",
 )
@@ -106,18 +111,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "Created if absent.",
     )
     parser.add_argument(
-        "--window", type=int, default=seqqc.DEFAULT_WINDOW, metavar="N",
-        help="width of the GC and entropy windows, in bases (default: "
-        "%(default)s, a spacer length, so one window is one candidate guide)",
-    )
-    parser.add_argument(
         "--gc-min", type=float, default=seqqc.DEFAULT_GC_MIN, metavar="X",
-        help="lower edge of the acceptable GC band, as a fraction "
-        "(default: %(default)s)",
+        help="lower edge of the acceptable GC band for the whole insert, as a "
+        "fraction (default: %(default)s)",
     )
     parser.add_argument(
         "--gc-max", type=float, default=seqqc.DEFAULT_GC_MAX, metavar="X",
-        help="upper edge of the acceptable GC band (default: %(default)s)",
+        help="upper edge of the acceptable GC band for the whole insert "
+        "(default: %(default)s)",
     )
     parser.add_argument(
         "--polyt-min", type=int, default=seqqc.DEFAULT_POLYT_MIN, metavar="N",
@@ -139,8 +140,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--min-entropy", type=float, default=seqqc.DEFAULT_MIN_ENTROPY,
         metavar="X",
-        help="flag windows whose Shannon entropy falls below this, in bits out "
-        "of a maximum of 2 (default: %(default)s)",
+        help="flag the region if its Shannon entropy falls below this, in bits "
+        "out of a maximum of 2 (default: %(default)s). A coarse whole-insert "
+        "measure; local low complexity is caught by the repeat scans.",
     )
     args = parser.parse_args(argv)
     # append leaves it None rather than the default when the flag is absent.
@@ -264,7 +266,7 @@ def main(argv: list[str] | None = None) -> int:
             f"  {summary['gene']:7} {summary['start']:>6,}-{summary['end']:<7,} "
             f"{summary['length_actual']:>5,} nt  "
             f"GC {summary['gc_frac']:.3f}  "
-            f"windows out of band {summary['n_windows_out_of_band']:>5}  "
+            f"entropy {summary['entropy']:.2f}  "
             f"polyT {summary['n_polyT_runs']:>3}  "
             f"repeats {summary['n_tandem_repeats']:>3}  "
             f"stops {summary['n_stops_total']:>4}  "
@@ -305,17 +307,10 @@ def analyse(
             "severity": severity,
         })
 
+    # One number for the whole insert: GC is not a located feature, so it is
+    # reported in the summary row and never emitted to the features file.
     gc, ambiguous = seqqc.gc_fraction(region)
-    gc_windows = seqqc.sliding_gc(region, args.window)
-    low = [w for w in gc_windows if w.value < args.gc_min]
-    high = [w for w in gc_windows if w.value > args.gc_max]
-    out_of_band = [w.value < args.gc_min or w.value > args.gc_max for w in gc_windows]
-    for window in low:
-        emit("gc_window_low", window.start, window.end,
-             f"GC {window.value:.3f} < {args.gc_min}", "warn")
-    for window in high:
-        emit("gc_window_high", window.start, window.end,
-             f"GC {window.value:.3f} > {args.gc_max}", "warn")
+    gc_in_band = args.gc_min <= gc <= args.gc_max
 
     polyt = seqqc.homopolymer_runs(region, args.polyt_min, bases="T")
     for run in polyt:
@@ -332,26 +327,19 @@ def analyse(
         emit("tandem_repeat", repeat.start, repeat.end,
              f"({repeat.motif}) x{repeat.copies}", "warn")
 
-    entropy_windows = seqqc.sliding_entropy(region, args.window)
-    low_entropy = [w for w in entropy_windows if w.value < args.min_entropy]
-    for window in low_entropy:
-        emit("low_entropy_window", window.start, window.end,
-             f"{window.value:.3f} bits < {args.min_entropy}", "warn")
+    entropy = seqqc.shannon_entropy(region)
 
     stops = seqqc.stop_codons(region)
     for stop in stops:
         emit("stop_codon", stop.start, stop.end, stop.codon, "info")
 
-    gc_values = [w.value for w in gc_windows]
-    entropy_values = [w.value for w in entropy_windows]
     longest_polyt = max(polyt, key=lambda r: r.length, default=None)
     longest_homopolymer = max(homopolymers, key=lambda r: r.length, default=None)
     longest_repeat = max(repeats, key=lambda r: r.length, default=None)
-    min_entropy_window = min(entropy_windows, key=lambda w: w.value, default=None)
 
     # Stop codons are deliberately absent: see the module docstring.
     flags = []
-    if low or high:
+    if not gc_in_band:
         flags.append("gc_out_of_band")
     if polyt:
         flags.append("polyT")
@@ -359,7 +347,7 @@ def analyse(
         flags.append("homopolymer")
     if repeats:
         flags.append("tandem_repeat")
-    if low_entropy:
+    if entropy < args.min_entropy:
         flags.append("low_entropy")
 
     summary = {
@@ -369,13 +357,8 @@ def analyse(
         "end": offset + len(region) - 1,
         "n_ambiguous": ambiguous,
         "gc_frac": round(gc, 4),
-        "gc_min_window": round(min(gc_values), 4) if gc_values else "",
-        "gc_max_window": round(max(gc_values), 4) if gc_values else "",
-        "gc_mean_window": round(statistics.fmean(gc_values), 4) if gc_values else "",
-        "gc_sd_window": round(statistics.pstdev(gc_values), 4)
-        if len(gc_values) > 1 else 0.0,
-        "n_windows_out_of_band": len(low) + len(high),
-        "widest_out_of_band_run": seqqc.widest_run(out_of_band),
+        # No separate in-band column: gc_frac and gc_band are both here, so the
+        # judgement is derivable from the row, and the flag states its verdict.
         "gc_band": f"{args.gc_min}-{args.gc_max}",
         "n_polyT_runs": len(polyt),
         "longest_polyT": longest_polyt.length if longest_polyt else 0,
@@ -389,10 +372,7 @@ def analyse(
         "n_tandem_repeats": len(repeats),
         "longest_tandem_repeat": longest_repeat.length if longest_repeat else 0,
         "longest_tandem_motif": longest_repeat.motif if longest_repeat else "",
-        "min_window_entropy": round(min(entropy_values), 4) if entropy_values else "",
-        "min_entropy_at": offset + min_entropy_window.start - 1
-        if min_entropy_window else "",
-        "n_windows_low_entropy": len(low_entropy),
+        "entropy": round(entropy, 4),
         "entropy_min": args.min_entropy,
         "n_stop_TAA": sum(1 for s in stops if s.codon == "TAA"),
         "n_stop_TAG": sum(1 for s in stops if s.codon == "TAG"),
@@ -428,22 +408,26 @@ def write_report(
     lines = [
         "# Target site QC",
         "",
-        f"Window {args.window} nt, GC band {args.gc_min}-{args.gc_max}, "
+        f"GC band {args.gc_min}-{args.gc_max}, "
         f"poly-T >= {args.polyt_min}, homopolymer >= {args.homopolymer_min}, "
         f"tandem repeat >= {args.repeat_copies} copies, "
         f"entropy < {args.min_entropy} bits.",
         "",
+        "GC and entropy are measured over the whole insert, the unit that gets "
+        "cloned. Guide-scale composition is a question for guide selection, "
+        "asked of the candidate guides rather than of the insert.",
+        "",
         "Stop codons are counted, not judged: chance alone puts about 94 stop "
         "triplets in 2 kb, so their presence is reported and never flagged.",
         "",
-        "| gene | region | nt | GC | windows out of band | poly-T | homopolymers "
+        "| gene | region | nt | GC | entropy | poly-T | homopolymers "
         "| repeats | stops | flags |",
         "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for s in summaries:
         lines.append(
             f"| {s['gene']} | {s['start']:,}-{s['end']:,} | {s['length_actual']:,} "
-            f"| {s['gc_frac']:.3f} | {s['n_windows_out_of_band']} "
+            f"| {s['gc_frac']:.3f} | {s['entropy']:.3f} "
             f"| {s['n_polyT_runs']} | {s['n_homopolymers']} "
             f"| {s['n_tandem_repeats']} | {s['n_stops_total']} "
             f"| {s['flags'] or '-'} |"
@@ -459,11 +443,9 @@ def write_report(
             f"- **Length**: {s['length_actual']:,} nt actual, "
             f"{s['length_declared']:,} declared"
             + ("" if s["length_matches"] else " -- **these disagree**"),
-            f"- **GC**: {s['gc_frac']:.1%} overall; windows "
-            f"{s['gc_min_window']:.1%}-{s['gc_max_window']:.1%}, "
-            f"mean {s['gc_mean_window']:.1%}, SD {s['gc_sd_window']:.3f}. "
-            f"{s['n_windows_out_of_band']} window(s) outside {s['gc_band']}, "
-            f"widest consecutive run {s['widest_out_of_band_run']}.",
+            f"- **GC**: {s['gc_frac']:.1%} over the whole insert, "
+            + ("**outside**" if "gc_out_of_band" in s["flags"] else "inside")
+            + f" the band {s['gc_band']}.",
             f"- **Poly-T**: {s['n_polyT_runs']} run(s) of >= {s['polyT_min']} T"
             + (f", longest {s['longest_polyT']} nt at {s['longest_polyT_at']:,}."
                if s["n_polyT_runs"] else "."),
@@ -474,9 +456,8 @@ def write_report(
             + f"; {s['n_tandem_repeats']} tandem repeat(s)"
             + (f" (longest {s['longest_tandem_repeat']} nt, motif "
                f"{s['longest_tandem_motif']})" if s["n_tandem_repeats"] else "")
-            + f"; lowest window entropy {s['min_window_entropy']:.3f} bits at "
-            f"{s['min_entropy_at']:,}, {s['n_windows_low_entropy']} window(s) "
-            f"below {s['entropy_min']}.",
+            + f"; whole-insert entropy {s['entropy']:.3f} bits against a "
+            f"threshold of {s['entropy_min']}.",
             f"- **Stop codons**: {s['n_stops_total']} total "
             f"({s['n_stop_TAA']} TAA, {s['n_stop_TAG']} TAG, "
             f"{s['n_stop_TGA']} TGA), {s['stops_per_100nt']} per 100 nt. "

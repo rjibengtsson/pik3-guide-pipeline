@@ -28,6 +28,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+import seqqc
 from annotation import Cds, Exon
 
 
@@ -258,6 +259,86 @@ def transcript_lengths(df: pd.DataFrame) -> dict[str, int]:
     read as absent rather than uncovered.
     """
     return df.groupby("transcript_id")["end"].max().astype(int).to_dict()
+
+
+class QcDrop(NamedTuple):
+    """What `drop_qc_flagged` removed, and under which thresholds.
+
+    The thresholds travel with the counts for the same reason `seqqc.GuideQC`
+    carries them: a summary line stating how many guides were dropped is not
+    auditable unless it also states what they were judged against.
+    """
+
+    kept: pd.DataFrame
+    n_input: int
+    by_flag: dict[str, int]
+    dropped_per_transcript: dict[str, int]
+    gc_min: float
+    gc_max: float
+    homopolymer_min: int
+
+    @property
+    def n_kept(self) -> int:
+        return len(self.kept)
+
+    @property
+    def n_dropped(self) -> int:
+        return self.n_input - self.n_kept
+
+
+def drop_qc_flagged(
+    df: pd.DataFrame,
+    gc_min: float = seqqc.DEFAULT_GUIDE_GC_MIN,
+    gc_max: float = seqqc.DEFAULT_GUIDE_GC_MAX,
+    homopolymer_min: int = seqqc.DEFAULT_GUIDE_HOMOPOLYMER_MIN,
+) -> QcDrop:
+    """Drop guides whose spacer fails guide-level QC, keeping row order.
+
+    Judged by `seqqc.check_guide` on the ``spacer_seq`` column -- the guide, not
+    the target, which is the same sequence `scripts/check_guides.py` scores, so
+    this filter and ``guide_qc.tsv`` cannot disagree. Recomputing from the
+    spacer rather than joining ``guide_qc.tsv`` is deliberate: the sequence is
+    already in the predictions file, so there is one source of truth and no way
+    to filter a plot against a stale QC run.
+
+    A guide is dropped if it raises **any** flag -- ``gc_low``, ``gc_high`` or
+    ``homopolymer``. The returned counts are per flag and overlap, since one
+    guide can raise two.
+
+    Call `transcript_lengths` on the **unfiltered** frame before this. The axis
+    length is the largest tile end, so taking it afterwards would shrink every
+    transcript to its last surviving guide and make a QC-poor 3' end read as
+    absent rather than as filtered out.
+    """
+    flags_per_row = [
+        seqqc.check_guide(
+            str(tile_id),
+            str(spacer),
+            gc_min=gc_min,
+            gc_max=gc_max,
+            homopolymer_min=homopolymer_min,
+        ).flags
+        for tile_id, spacer in zip(df["tile_id"], df["spacer_seq"])
+    ]
+
+    by_flag: dict[str, int] = {}
+    for flags in flags_per_row:
+        for flag in flags:
+            by_flag[flag] = by_flag.get(flag, 0) + 1
+
+    keep = pd.Series([not flags for flags in flags_per_row], index=df.index)
+    dropped = df.loc[~keep]
+    return QcDrop(
+        kept=df.loc[keep],
+        n_input=len(df),
+        by_flag=by_flag,
+        dropped_per_transcript=(
+            dropped.groupby("transcript_id").size().astype(int).to_dict()
+        ),
+        gc_min=gc_min,
+        gc_max=gc_max,
+        homopolymer_min=homopolymer_min,
+    )
 
 
 def plot_scatterlines(

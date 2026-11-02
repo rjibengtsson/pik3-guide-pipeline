@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.join(_ROOT, "scripts"))
 import seqqc  # noqa: E402
 
 CHECK_SCRIPT = os.path.join(_ROOT, "scripts", "check_target_sites.py")
+GUIDE_SCRIPT = os.path.join(_ROOT, "scripts", "check_guides.py")
 
 
 class TestGc(unittest.TestCase):
@@ -45,21 +46,19 @@ class TestGc(unittest.TestCase):
     def test_empty_sequence_does_not_divide_by_zero(self):
         self.assertEqual(seqqc.gc_fraction(""), (0.0, 0))
 
-    def test_sliding_gc_window_positions_are_one_based_inclusive(self):
-        windows = seqqc.sliding_gc("ATATGCGC", window=4)
-        self.assertEqual(windows[0].start, 1)
-        self.assertEqual(windows[0].end, 4)
-        self.assertAlmostEqual(windows[0].value, 0.0)
-        self.assertEqual(windows[-1].end, 8)
-        self.assertAlmostEqual(windows[-1].value, 1.0)
+    def test_gc_is_measured_over_the_whole_sequence_only(self):
+        # The point of dropping the spacer-width scan: a region holding a
+        # GC-poor stretch and a GC-rich one is one number, the insert's.
+        gc, _ = seqqc.gc_fraction("AT" * 15 + "GC" * 15)
+        self.assertAlmostEqual(gc, 0.5)
 
-    def test_step_is_one_so_every_offset_is_measured(self):
-        self.assertEqual(len(seqqc.sliding_gc("A" * 100, window=30)), 71)
-
-    def test_short_sequence_yields_one_window_rather_than_none(self):
-        windows = seqqc.sliding_gc("GGC", window=30)
-        self.assertEqual(len(windows), 1)
-        self.assertEqual((windows[0].start, windows[0].end), (1, 3))
+    def test_no_sliding_window_api_remains(self):
+        # A 30 nt window is a candidate guide, not a property of the insert;
+        # scoring one belongs to guide selection. Pinned so it does not return
+        # here by habit.
+        for name in ("sliding_gc", "sliding_entropy", "widest_run",
+                     "WindowStat", "DEFAULT_WINDOW"):
+            self.assertFalse(hasattr(seqqc, name), name)
 
 
 class TestHomopolymers(unittest.TestCase):
@@ -139,13 +138,17 @@ class TestEntropy(unittest.TestCase):
     def test_two_bases_evenly_is_one_bit(self):
         self.assertAlmostEqual(seqqc.shannon_entropy("ATATATAT"), 1.0)
 
-    def test_sliding_entropy_finds_the_low_complexity_window(self):
+    def test_a_local_low_complexity_stretch_barely_moves_the_whole_insert_value(self):
+        # Why the whole-insert number cannot replace the repeat scans, stated
+        # as a test rather than only in the docstring: a 30 nt poly-A buried in
+        # 80 nt of uniform sequence leaves entropy near 2 bits, and
+        # homopolymer_runs is what actually finds it.
         sequence = "ACGT" * 10 + "A" * 30 + "ACGT" * 10
-        windows = seqqc.sliding_entropy(sequence, window=30)
-        lowest = min(windows, key=lambda w: w.value)
-        self.assertAlmostEqual(lowest.value, 0.0)
-        # The poly-A runs 41-70, so the all-A window starts there.
-        self.assertEqual(lowest.start, 41)
+        self.assertGreater(seqqc.shannon_entropy(sequence), 1.8)
+        # 41-71, not 41-70: the ACGT repeat resuming at 71 begins with an A,
+        # which extends the run by one.
+        runs = seqqc.homopolymer_runs(sequence, 5, bases="A")
+        self.assertEqual((runs[0].start, runs[0].end), (41, 71))
 
 
 class TestStopCodons(unittest.TestCase):
@@ -189,23 +192,6 @@ class TestStopCodons(unittest.TestCase):
 
     def test_none_in_a_stopless_sequence(self):
         self.assertEqual(seqqc.stop_codons("GGCCGGCCGGCC"), [])
-
-
-class TestWidestRun(unittest.TestCase):
-    def test_counts_the_longest_consecutive_stretch(self):
-        self.assertEqual(seqqc.widest_run([True, False, True, True, True, False]), 3)
-
-    def test_scattered_and_consecutive_are_distinguished(self):
-        scattered = [True, False, True, False, True, False]
-        consecutive = [True, True, True, False, False, False]
-        self.assertEqual(sum(scattered), sum(consecutive))
-        self.assertNotEqual(
-            seqqc.widest_run(scattered), seqqc.widest_run(consecutive)
-        )
-
-    def test_empty_and_all_false(self):
-        self.assertEqual(seqqc.widest_run([]), 0)
-        self.assertEqual(seqqc.widest_run([False, False]), 0)
 
 
 class TestCli(unittest.TestCase):
@@ -338,6 +324,38 @@ class TestCli(unittest.TestCase):
         self.assertEqual(row["gc_band"], "0.3-0.7")
         self.assertEqual(row["polyT_min"], "4")
         self.assertEqual(row["homopolymer_min"], "5")
+        self.assertEqual(row["entropy_min"], "1.5")
+
+    def test_gc_and_entropy_are_one_whole_insert_number_each(self):
+        row = self.summary[0]
+        # The region is 60 nt; these are its own values, not a window's.
+        self.assertTrue(0.0 <= float(row["gc_frac"]) <= 1.0)
+        self.assertTrue(0.0 <= float(row["entropy"]) <= 2.0)
+
+    def test_gc_verdict_is_derivable_from_the_row_without_its_own_column(self):
+        row = self.summary[0]
+        self.assertNotIn("gc_in_band", row)
+        low, high = (float(x) for x in row["gc_band"].split("-"))
+        in_band = low <= float(row["gc_frac"]) <= high
+        self.assertEqual(in_band, "gc_out_of_band" not in row["flags"])
+
+    def test_no_window_columns_in_the_summary(self):
+        self.assertEqual(
+            [c for c in self.summary[0] if "window" in c], []
+        )
+
+    def test_only_located_features_are_emitted(self):
+        # GC and entropy are whole-insert numbers, so they belong to the
+        # summary row and must not reappear as pseudo-features with spans.
+        kinds = {f["feature_type"] for f in self.features}
+        self.assertEqual(
+            kinds,
+            {"polyT", "homopolymer", "tandem_repeat", "stop_codon"},
+        )
+
+    def test_report_does_not_mention_windows(self):
+        with open(os.path.join(self.out, "target_site_qc.md")) as handle:
+            self.assertNotIn("window", handle.read().lower())
 
 
 class TestCliRejectsBadInput(unittest.TestCase):
@@ -412,3 +430,415 @@ class TestCliRejectsBadInput(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# ---------------------------------------------------------------------------
+# Guide scale
+# ---------------------------------------------------------------------------
+
+
+class TestGuideHomopolymerRuns(unittest.TestCase):
+    """Runs of >= 4, over all four bases, named in the input's own alphabet."""
+
+    def test_four_identical_bases_is_a_run(self):
+        runs = seqqc.guide_homopolymer_runs("GGGGACGTACGTACGTACGTACGTACGTAC")
+        self.assertEqual([(r.base, r.start, r.end) for r in runs],
+                         [("G", 1, 4)])
+
+    def test_three_identical_bases_is_not(self):
+        self.assertEqual(seqqc.guide_homopolymer_runs("GGGACGTACGTACGT"), [])
+
+    def test_a_run_of_u_is_named_u_not_t(self):
+        # The scanner works in T internally. Reporting base "T" here would put
+        # a sequence in the detail column that appears nowhere in the guide,
+        # so a search for UUUU would miss its own hit.
+        runs = seqqc.guide_homopolymer_runs("UUUUACGCACGCACGCACGCACGCACGCAC")
+        self.assertEqual([(r.base, r.start, r.end) for r in runs],
+                         [("U", 1, 4)])
+
+    def test_a_run_of_t_is_still_named_t(self):
+        runs = seqqc.guide_homopolymer_runs("TTTTACGCACGCACGCACGCACGCACGCAC")
+        self.assertEqual([r.base for r in runs], ["T"])
+
+    def test_all_four_bases_are_scanned(self):
+        # Unlike the insert-scale check, T is not handed off to a poly-T scan,
+        # so all four must appear here.
+        for base in "ACGT":
+            with self.subTest(base=base):
+                runs = seqqc.guide_homopolymer_runs(base * 4 + "GC" * 13)
+                self.assertEqual([r.base for r in runs], [base])
+
+    def test_every_run_is_reported_not_only_the_longest(self):
+        runs = seqqc.guide_homopolymer_runs("AAAAGCGCGCGCGCGCGCGCGCGCGCAAAA")
+        self.assertEqual([(r.start, r.end) for r in runs], [(1, 4), (27, 30)])
+
+    def test_a_run_is_maximal_not_split_into_minimum_length_pieces(self):
+        # Eight A is one run of 8, not two of 4: the span is what gets acted
+        # on, and two rows would double-count one feature.
+        runs = seqqc.guide_homopolymer_runs("AAAAAAAAGCGCGCGCGCGCGC")
+        self.assertEqual(len(runs), 1)
+        self.assertEqual(runs[0].length, 8)
+
+    def test_offsets_slice_the_run_back_out_of_the_guide(self):
+        # The coordinate convention, pinned the same way src/tile.py pins its
+        # own: 1-based inclusive, relative to the guide.
+        guide = "GCAUUUUGCAUGCAUGCAUGCAUGCAUGCA"
+        run, = seqqc.guide_homopolymer_runs(guide)
+        self.assertEqual(guide[run.start - 1:run.end], "UUUU")
+
+    def test_threshold_is_adjustable(self):
+        self.assertEqual(seqqc.guide_homopolymer_runs("GGGACGT", 3)[0].length, 3)
+        self.assertEqual(seqqc.guide_homopolymer_runs("GGGACGT", 4), [])
+
+    def test_empty_guide_has_no_runs(self):
+        self.assertEqual(seqqc.guide_homopolymer_runs(""), [])
+
+
+class TestCheckGuide(unittest.TestCase):
+    """The GC band and the flags it raises, at and around the edges."""
+
+    def test_default_band_is_forty_to_sixty_percent(self):
+        self.assertEqual(seqqc.DEFAULT_GUIDE_GC_MIN, 0.40)
+        self.assertEqual(seqqc.DEFAULT_GUIDE_GC_MAX, 0.60)
+
+    def test_default_homopolymer_minimum_is_four(self):
+        self.assertEqual(seqqc.DEFAULT_GUIDE_HOMOPOLYMER_MIN, 4)
+
+    def test_guide_scale_thresholds_are_not_the_insert_scale_ones(self):
+        # The two scales are judged differently on purpose; sharing a constant
+        # would silently couple them.
+        self.assertNotEqual(seqqc.DEFAULT_GUIDE_GC_MIN, seqqc.DEFAULT_GC_MIN)
+        self.assertNotEqual(seqqc.DEFAULT_GUIDE_GC_MAX, seqqc.DEFAULT_GC_MAX)
+        self.assertNotEqual(seqqc.DEFAULT_GUIDE_HOMOPOLYMER_MIN,
+                            seqqc.DEFAULT_HOMOPOLYMER_MIN)
+
+    def test_mid_band_guide_passes_with_no_flags(self):
+        # 15 of 30 bases GC.
+        result = seqqc.check_guide("g", "GCAUGCAUGCAUGCAUGCAUGCAUGCAUGA")
+        self.assertAlmostEqual(result.gc, 0.5)
+        self.assertEqual(result.flags, ())
+        self.assertTrue(result.passes)
+
+    def test_exactly_forty_percent_passes(self):
+        # 12 of 30 bases GC. The edge is reachable with a 30 nt guide, so
+        # which side of it passes is a decision, not a rounding artefact.
+        guide = "GC" * 6 + "AU" * 9
+        result = seqqc.check_guide("g", guide)
+        self.assertEqual(len(guide), 30)
+        self.assertAlmostEqual(result.gc, 0.40)
+        self.assertTrue(result.gc_in_band)
+        self.assertEqual(result.flags, ())
+
+    def test_exactly_sixty_percent_passes(self):
+        guide = "GC" * 9 + "AU" * 6
+        result = seqqc.check_guide("g", guide)
+        self.assertAlmostEqual(result.gc, 0.60)
+        self.assertTrue(result.gc_in_band)
+        self.assertEqual(result.flags, ())
+
+    def test_just_below_the_band_is_gc_low(self):
+        # 11 of 30, one G/C short of the edge that passes above.
+        result = seqqc.check_guide("g", "GC" * 5 + "G" + "AUAU" * 4 + "AUA")
+        self.assertLess(result.gc, 0.40)
+        self.assertEqual(result.flags, ("gc_low",))
+
+    def test_just_above_the_band_is_gc_high(self):
+        result = seqqc.check_guide("g", "GC" * 9 + "G" + "AU" * 5 + "A")
+        self.assertGreater(result.gc, 0.60)
+        self.assertEqual(result.flags, ("gc_high",))
+
+    def test_low_and_high_are_separate_flags_and_never_both(self):
+        # Separate because they have opposite remedies; mutually exclusive
+        # because one guide has one GC fraction.
+        for guide in ("A" * 30, "G" * 30, "GCAUGCAUGCAUGCAUGCAUGCAUGCAUGC"):
+            with self.subTest(guide=guide[:8]):
+                flags = seqqc.check_guide("g", guide).flags
+                self.assertFalse("gc_low" in flags and "gc_high" in flags)
+
+    def test_a_guide_can_raise_both_a_gc_and_a_homopolymer_flag(self):
+        result = seqqc.check_guide("g", "AAAA" + "AU" * 13)
+        self.assertEqual(result.flags, ("gc_low", "homopolymer"))
+        self.assertEqual(result.n_flags if hasattr(result, "n_flags")
+                         else len(result.flags), 2)
+
+    def test_homopolymer_alone_flags_an_in_band_guide(self):
+        result = seqqc.check_guide("g", "GGGG" + "AUGC" * 6 + "AU")
+        self.assertTrue(result.gc_in_band, result.gc)
+        self.assertEqual(result.flags, ("homopolymer",))
+        self.assertFalse(result.passes)
+        # Exactly 4, not 5: the base after the run must not extend it, or the
+        # threshold being tested is not the one this fixture exercises.
+        self.assertEqual(result.longest_run.length, 4)
+
+    def test_longest_run_is_the_longest_earliest_first_on_a_tie(self):
+        result = seqqc.check_guide("g", "AAAAGCGCGCGCGCGCGCGCGCGCCCCCCC")
+        self.assertEqual(result.longest_run.base, "C")
+        self.assertEqual(result.longest_run.length, 7)
+
+        # Two runs of 4: the A at the front and the G at the back.
+        tied = seqqc.check_guide("g", "AAAAGCGCGCGCGCGCGCGCGCGCGCGGGG")
+        self.assertEqual([r.length for r in tied.runs], [4, 4])
+        self.assertEqual(tied.longest_run.start, 1)
+
+    def test_longest_run_is_none_when_there_are_none(self):
+        self.assertIsNone(seqqc.check_guide("g", "GCAUGCAUGCAUGC").longest_run)
+
+    def test_thresholds_travel_on_the_record(self):
+        # So that flags can be audited from the record alone, without knowing
+        # how the CLI was invoked.
+        result = seqqc.check_guide("g", "GGGG", gc_min=0.1, gc_max=0.2,
+                                   homopolymer_min=3)
+        self.assertEqual((result.gc_min, result.gc_max), (0.1, 0.2))
+        self.assertEqual(result.homopolymer_min, 3)
+
+    def test_thresholds_are_honoured_not_just_recorded(self):
+        guide = "GGGG" + "AUGC" * 6 + "AU"
+        self.assertEqual(
+            seqqc.check_guide("g", guide, homopolymer_min=5).flags, ()
+        )
+        self.assertEqual(
+            seqqc.check_guide("g", guide, gc_min=0.9).flags,
+            ("gc_low", "homopolymer"),
+        )
+
+    def test_both_alphabets_give_the_same_verdict(self):
+        rna = seqqc.check_guide("g", "UUUUGCAUGCAUGCAUGCAUGCAUGCAUGC")
+        dna = seqqc.check_guide("g", "TTTTGCATGCATGCATGCATGCATGCATGC")
+        self.assertEqual(rna.flags, dna.flags)
+        self.assertAlmostEqual(rna.gc, dna.gc)
+        # Only the name of the run differs, which is the point of the wrapper.
+        self.assertEqual((rna.longest_run.base, dna.longest_run.base),
+                         ("U", "T"))
+
+    def test_ambiguous_bases_are_counted_and_leave_the_gc_denominator(self):
+        result = seqqc.check_guide("g", "GCAU" + "N" * 26)
+        self.assertEqual(result.n_ambiguous, 26)
+        self.assertAlmostEqual(result.gc, 0.5)
+
+    def test_ambiguous_bases_are_reported_but_not_flagged(self):
+        # An N is a property of the input FASTA, not of the guide's chemistry.
+        result = seqqc.check_guide("g", "GCAUGCAUGCAUGCAUGCAUGCAUGCAUGN")
+        self.assertEqual(result.n_ambiguous, 1)
+        self.assertEqual(result.flags, ())
+
+    def test_sequence_and_id_are_carried_through(self):
+        result = seqqc.check_guide("NM_006218.4:1-30", "gcaugcaugcaugc")
+        self.assertEqual(result.guide_id, "NM_006218.4:1-30")
+        self.assertEqual(result.sequence, "GCAUGCAUGCAUGC")
+        self.assertEqual(result.length, 14)
+
+    def test_empty_guide_does_not_raise(self):
+        result = seqqc.check_guide("g", "")
+        self.assertEqual(result.gc, 0.0)
+        self.assertEqual(result.runs, ())
+
+
+class TestCheckGuidesCli(unittest.TestCase):
+    """End to end over a FASTA with one planted guide per outcome."""
+
+    GUIDES = {
+        # id                mid-band, no run -> passes
+        "pass:1-30":        "GCAUGCAUGCAUGCAUGCAUGCAUGCAUGC",
+        # 12/30 GC exactly, the inclusive lower edge
+        "edge_low:1-30":    "GCGCGCGCGCGCAUAUAUAUAUAUAUAUAU",
+        # 18/30 GC exactly, the inclusive upper edge
+        "edge_high:1-30":   "GCGCGCGCGCGCGCGCGCAUAUAUAUAUAU",
+        # 11/30 -> gc_low
+        "low:1-30":         "GCGCGCGCGCGAUAUAUAUAUAUAUAUAUA",
+        # 19/30 -> gc_high
+        "high:1-30":        "GCGCGCGCGCGCGCGCGCGAUAUAUAUAUA",
+        # in band, but a run of four U
+        "uuuu:1-30":        "UUUUGCAUGCAUGCAUGCAUGCAUGCAUAU",
+        # in band, but a run of four G
+        "gggg:1-30":        "GGGGAUAUGCAUGCAUAUAUGCAUGCAUAU",
+        # both: GC-poor and a run of A
+        "both:1-30":        "AAAAAUAUAUAUAUAUAUAUAUAUAUAUGC",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.fasta = os.path.join(cls.tmp.name, "guides.fasta")
+        with open(cls.fasta, "w") as handle:
+            for guide_id, sequence in cls.GUIDES.items():
+                handle.write(f">{guide_id}\n{sequence}\n")
+        cls.output = os.path.join(cls.tmp.name, "out", "guide_qc.tsv")
+        cls.completed = cls._run("--output", cls.output)
+        assert cls.completed.returncode == 0, cls.completed.stderr.decode()
+        cls.rows = {row["guide_id"]: row for row in cls._read(cls.output)}
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    @classmethod
+    def _run(cls, *extra, fasta=None):
+        return subprocess.run(
+            [sys.executable, GUIDE_SCRIPT, "--guides", fasta or cls.fasta,
+             *extra],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+
+    @staticmethod
+    def _read(path):
+        with open(path, newline="", encoding="utf-8") as handle:
+            lines = [line.rstrip("\n").split("\t") for line in handle]
+        header = lines[0]
+        return [dict(zip(header, row)) for row in lines[1:]]
+
+    def test_creates_the_output_directory(self):
+        self.assertTrue(os.path.isfile(self.output))
+
+    def test_one_row_per_guide_by_default(self):
+        self.assertEqual(len(self.rows), len(self.GUIDES))
+
+    def test_rows_are_in_input_order(self):
+        rows = self._read(self.output)
+        self.assertEqual([r["guide_id"] for r in rows], list(self.GUIDES))
+
+    def test_no_stray_carriage_return_on_the_last_column(self):
+        with open(self.output, "rb") as handle:
+            self.assertNotIn(b"\r", handle.read())
+
+    def test_a_clean_guide_has_no_flags(self):
+        row = self.rows["pass:1-30"]
+        self.assertEqual(row["flags"], "")
+        self.assertEqual(row["n_flags"], "0")
+
+    def test_both_band_edges_pass(self):
+        for guide_id in ("edge_low:1-30", "edge_high:1-30"):
+            with self.subTest(guide_id=guide_id):
+                self.assertEqual(self.rows[guide_id]["flags"], "")
+
+    def test_gc_low_and_gc_high_are_flagged_separately(self):
+        self.assertEqual(self.rows["low:1-30"]["flags"], "gc_low")
+        self.assertEqual(self.rows["high:1-30"]["flags"], "gc_high")
+
+    def test_a_run_of_four_is_flagged_in_an_in_band_guide(self):
+        for guide_id in ("uuuu:1-30", "gggg:1-30"):
+            with self.subTest(guide_id=guide_id):
+                self.assertEqual(self.rows[guide_id]["flags"], "homopolymer")
+
+    def test_both_flags_appear_on_one_row(self):
+        row = self.rows["both:1-30"]
+        self.assertEqual(row["flags"], "gc_low;homopolymer")
+        self.assertEqual(row["n_flags"], "2")
+
+    def test_run_detail_names_the_base_in_the_input_alphabet(self):
+        self.assertEqual(self.rows["uuuu:1-30"]["homopolymer_runs"],
+                         "U:1-4(x4)")
+        self.assertEqual(self.rows["uuuu:1-30"]["longest_homopolymer_base"],
+                         "U")
+
+    def test_run_offsets_slice_the_run_out_of_the_sequence_column(self):
+        row = self.rows["gggg:1-30"]
+        start, end = (int(x) for x in
+                      row["homopolymer_runs"].split(":")[1]
+                      .split("(")[0].split("-"))
+        self.assertEqual(row["sequence"][start - 1:end], "GGGG")
+
+    def test_gc_percent_and_gc_frac_agree(self):
+        for row in self.rows.values():
+            with self.subTest(guide_id=row["guide_id"]):
+                self.assertAlmostEqual(float(row["gc_percent"]),
+                                       100 * float(row["gc_frac"]), places=1)
+
+    def test_thresholds_are_echoed_into_every_row(self):
+        for row in self.rows.values():
+            with self.subTest(guide_id=row["guide_id"]):
+                self.assertEqual(row["gc_band"], "0.4-0.6")
+                self.assertEqual(row["homopolymer_min"], "4")
+
+    def test_the_verdict_is_derivable_from_the_row(self):
+        # No pass/fail column: gc_frac against gc_band and n_homopolymer_runs
+        # against homopolymer_min must reproduce n_flags from the row alone.
+        for row in self.rows.values():
+            with self.subTest(guide_id=row["guide_id"]):
+                low, high = (float(x) for x in row["gc_band"].split("-"))
+                expected = 0
+                if not low <= float(row["gc_frac"]) <= high:
+                    expected += 1
+                if int(row["n_homopolymer_runs"]):
+                    expected += 1
+                self.assertEqual(int(row["n_flags"]), expected)
+
+    def test_flagged_only_drops_the_passing_rows(self):
+        output = os.path.join(self.tmp.name, "flagged.tsv")
+        completed = self._run("--output", output, "--flagged-only")
+        self.assertEqual(completed.returncode, 0, completed.stderr.decode())
+        rows = self._read(output)
+        self.assertTrue(rows)
+        self.assertTrue(all(int(r["n_flags"]) > 0 for r in rows))
+        self.assertNotIn("pass:1-30", {r["guide_id"] for r in rows})
+
+    def test_flagged_only_summary_still_counts_every_guide(self):
+        # The counts describe the input, not the written subset, or the
+        # fraction passing could not be read off the summary.
+        output = os.path.join(self.tmp.name, "flagged2.tsv")
+        completed = self._run("--output", output, "--flagged-only")
+        self.assertIn(f"guides read:  {len(self.GUIDES)}",
+                      completed.stderr.decode())
+
+    def test_summary_reports_each_flag_separately(self):
+        text = self.completed.stderr.decode()
+        for name in ("gc_low", "gc_high", "homopolymer", "passing", "flagged"):
+            self.assertIn(name, text)
+
+    def test_thresholds_are_adjustable_from_the_command_line(self):
+        output = os.path.join(self.tmp.name, "loose.tsv")
+        completed = self._run("--output", output, "--homopolymer-min", "5",
+                              "--gc-min", "0.0", "--gc-max", "1.0")
+        self.assertEqual(completed.returncode, 0, completed.stderr.decode())
+        rows = {r["guide_id"]: r for r in self._read(output)}
+        self.assertEqual(rows["uuuu:1-30"]["flags"], "")
+        self.assertEqual(rows["low:1-30"]["flags"], "")
+
+
+class TestCheckGuidesCliRejectsBadInput(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.output = os.path.join(self.tmp.name, "out.tsv")
+
+    def _run(self, *extra, body=">g1\nGCAUGCAUGCAUGCAUGCAUGCAUGCAUGC\n"):
+        fasta = os.path.join(self.tmp.name, "guides.fasta")
+        with open(fasta, "w") as handle:
+            handle.write(body)
+        return subprocess.run(
+            [sys.executable, GUIDE_SCRIPT, "--guides", fasta,
+             "--output", self.output, *extra],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+
+    def test_missing_fasta_is_rejected(self):
+        completed = subprocess.run(
+            [sys.executable, GUIDE_SCRIPT,
+             "--guides", os.path.join(self.tmp.name, "absent.fasta"),
+             "--output", self.output],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        self.assertEqual(completed.returncode, 1)
+        self.assertIn("no such guide FASTA", completed.stderr.decode())
+
+    def test_empty_fasta_is_rejected(self):
+        completed = self._run(body="")
+        self.assertEqual(completed.returncode, 1)
+        self.assertIn("no FASTA records", completed.stderr.decode())
+
+    def test_duplicate_guide_id_is_a_hard_error(self):
+        # The output is keyed on guide_id; a duplicate would make a downstream
+        # join silently pick one of two different rows.
+        completed = self._run(body=">g1\nGCAUGCAUGC\n>g1\nAUAUAUAUAU\n")
+        self.assertEqual(completed.returncode, 1)
+        self.assertIn("duplicate guide id", completed.stderr.decode())
+
+    def test_inverted_gc_band_is_rejected(self):
+        completed = self._run("--gc-min", "0.6", "--gc-max", "0.4")
+        self.assertEqual(completed.returncode, 2)
+        self.assertIn("no GC can pass", completed.stderr.decode())
+
+    def test_homopolymer_min_of_one_is_rejected(self):
+        # A run of 1 is every base, so every guide would be flagged.
+        completed = self._run("--homopolymer-min", "1")
+        self.assertEqual(completed.returncode, 2)
+        self.assertIn("at least 2", completed.stderr.decode())

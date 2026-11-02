@@ -1,21 +1,46 @@
-"""Sequence QC for a selected target region: GC, poly-T, repeats, stop codons.
+"""Sequence QC at two scales: the cloned insert, and the individual guide.
 
-Four properties, measured over a region already extracted from its transcript:
+The module serves **two units of measurement**, and keeping them apart is the
+whole organising idea here. Which one a function belongs to is stated in its
+docstring; the guide-scale functions are gathered at the bottom of the file
+under their own heading, and take a single guide as their argument.
+
+Insert scale -- GC, poly-T, repeats, stop codons
+    Measured over a region already extracted from its transcript. The unit is
+    the **whole insert**, because that is what gets cloned: these numbers
+    describe the fragment going into the construct, not the individual spacers
+    that will later be chosen from inside it.
+Guide scale -- GC band, homopolymer runs
+    Measured over one candidate guide, asked of the guide itself. This is
+    deliberately *not* a sliding window over an insert: a window is a guess at
+    where a guide might go, whereas a guide is a sequence someone has committed
+    to, and only the second is worth passing or failing. `check_guide` is the
+    entry point.
+
+The two scales do not share thresholds. A run of 4 identical bases is
+unremarkable in 2 kb of insert and disqualifying in a 30 nt spacer, and the GC
+band that an insert must merely sit inside is much wider than the band a guide
+is held to -- hence `DEFAULT_GC_MIN`/`DEFAULT_GC_MAX` for the insert and the
+separate `DEFAULT_GUIDE_GC_*` for a guide. They do share *scanners*:
+`check_guide` calls the same `gc_fraction` and `homopolymer_runs` the insert
+checks use, so the two scales cannot disagree about what a run or a GC fraction
+is, only about which values are acceptable.
+
+The insert-scale properties, in detail:
 
 GC content
-    Over the whole region, and over a sliding window the length of a spacer --
-    the window **is** a candidate guide, so a region averaging 50% that holds a
-    20% window is a different object from a uniformly 50% one, and only the
-    window view separates them.
+    One fraction over the whole region -- never a scan at spacer scale. A
+    guide's own GC is a property of that guide and is judged by `check_guide`
+    against its own band, not read off a window of the insert.
 poly-T stretches
     Runs of T at or above a threshold. Four is the default because a run of
     four or more T is the classic premature-termination signal in a U6-driven
     construct.
 repeats and homopolymers
     Homopolymers of A, C and G (T is covered by the poly-T scan, so it is not
-    reported twice), short tandem repeats of a 2-4 nt motif, and a per-window
-    Shannon entropy that catches the diffuse low-complexity a motif scan
-    misses and that DUST would mask.
+    reported twice), short tandem repeats of a 2-4 nt motif, and the region's
+    Shannon entropy, which catches a composition so skewed that a motif scan
+    finds nothing to point at.
 stop codons
     Every occurrence of TAA, TAG or TGA at every offset. **Presence only** --
     no reading frame, no CDS. Reported as counts and positions rather than as a
@@ -43,10 +68,6 @@ import math
 import re
 from typing import NamedTuple, Sequence
 
-#: A spacer length: the GC and entropy windows are this wide, so one window is
-#: one candidate guide rather than an arbitrary smoothing span.
-DEFAULT_WINDOW = 30
-
 DEFAULT_GC_MIN = 0.30
 DEFAULT_GC_MAX = 0.70
 DEFAULT_POLYT_MIN = 4
@@ -54,6 +75,15 @@ DEFAULT_HOMOPOLYMER_MIN = 5
 DEFAULT_MIN_ENTROPY = 1.5      # bits, out of a maximum of 2 over 4 bases
 DEFAULT_REPEAT_MOTIFS = (2, 3, 4)
 DEFAULT_REPEAT_COPIES = 3
+
+# Guide scale. Separate from the insert thresholds above on purpose: see the
+# module docstring. A 30 nt spacer is held to a tighter GC band and a shorter
+# homopolymer than 2 kb of insert, and all four bases count for a guide --
+# there is no poly-T scan to hand T off to, because a guide's U run is a
+# property of the spacer, not a U6 termination signal in the construct.
+DEFAULT_GUIDE_GC_MIN = 0.40
+DEFAULT_GUIDE_GC_MAX = 0.60
+DEFAULT_GUIDE_HOMOPOLYMER_MIN = 4
 
 STOP_CODONS = ("TAA", "TAG", "TGA")
 UNAMBIGUOUS = frozenset("ACGT")
@@ -84,14 +114,6 @@ class Repeat(NamedTuple):
         return self.end - self.start + 1
 
 
-class WindowStat(NamedTuple):
-    """One sliding-window measurement."""
-
-    start: int                  # 1-based inclusive, relative to the region
-    end: int
-    value: float
-
-
 class Stop(NamedTuple):
     codon: str
     start: int                  # 1-based inclusive, relative to the region
@@ -115,21 +137,6 @@ def gc_fraction(sequence: str) -> tuple[float, int]:
     if not usable:
         return 0.0, ambiguous
     return (counts["G"] + counts["C"]) / usable, ambiguous
-
-
-def sliding_gc(sequence: str, window: int = DEFAULT_WINDOW) -> list[WindowStat]:
-    """GC fraction of every ``window``-wide window, step 1.
-
-    A sequence shorter than ``window`` yields one window spanning all of it,
-    so a short region is measured rather than skipped.
-    """
-    seq = sequence.upper().replace("U", "T")
-    if len(seq) <= window:
-        return [WindowStat(1, len(seq), gc_fraction(seq)[0])] if seq else []
-    return [
-        WindowStat(i + 1, i + window, gc_fraction(seq[i:i + window])[0])
-        for i in range(len(seq) - window + 1)
-    ]
 
 
 def homopolymer_runs(
@@ -202,7 +209,13 @@ def tandem_repeats(
 
 
 def shannon_entropy(sequence: str) -> float:
-    """Base-composition entropy in bits, 0 for a homopolymer and 2 for uniform."""
+    """Base-composition entropy in bits, 0 for a homopolymer and 2 for uniform.
+
+    Over a whole insert this is a coarse measure by construction -- a short
+    low-complexity stretch barely moves it. That stretch is what
+    `homopolymer_runs` and `tandem_repeats` are for; this number only catches a
+    composition skewed across the whole fragment.
+    """
     seq = sequence.upper().replace("U", "T")
     counts = [seq.count(base) for base in "ACGT"]
     total = sum(counts)
@@ -211,17 +224,6 @@ def shannon_entropy(sequence: str) -> float:
     return -sum(
         (n / total) * math.log2(n / total) for n in counts if n
     )
-
-
-def sliding_entropy(sequence: str, window: int = DEFAULT_WINDOW) -> list[WindowStat]:
-    """Shannon entropy of every ``window``-wide window, step 1."""
-    seq = sequence.upper().replace("U", "T")
-    if len(seq) <= window:
-        return [WindowStat(1, len(seq), shannon_entropy(seq))] if seq else []
-    return [
-        WindowStat(i + 1, i + window, shannon_entropy(seq[i:i + window]))
-        for i in range(len(seq) - window + 1)
-    ]
 
 
 def stop_codons(sequence: str) -> list[Stop]:
@@ -264,15 +266,144 @@ def count_ambiguous(sequence: str) -> int:
     return sum(1 for base in seq if base not in UNAMBIGUOUS)
 
 
-def widest_run(flags: Sequence[bool]) -> int:
-    """Longest run of True -- how many consecutive windows were out of band.
+# ---------------------------------------------------------------------------
+# Guide scale
+#
+# Everything below takes one candidate guide as its unit. See the module
+# docstring for why that is kept distinct from the insert-scale functions
+# above, and why the thresholds differ.
+# ---------------------------------------------------------------------------
 
-    Reported alongside the out-of-band count because the two say different
-    things: forty scattered bad windows are a different region from forty
-    consecutive ones, and only this separates them.
+
+class GuideQC(NamedTuple):
+    """One guide's QC record, carrying the thresholds that judged it.
+
+    The thresholds travel with the measurements so that `flags` is derivable
+    from the record alone -- the same reason the insert summary echoes its
+    thresholds into every row. A flag can then be audited without knowing what
+    the CLI was invoked with.
     """
-    widest = current = 0
-    for flag in flags:
-        current = current + 1 if flag else 0
-        widest = max(widest, current)
-    return widest
+
+    guide_id: str
+    sequence: str
+    gc: float
+    n_ambiguous: int
+    runs: tuple[Run, ...]
+    gc_min: float
+    gc_max: float
+    homopolymer_min: int
+
+    @property
+    def length(self) -> int:
+        return len(self.sequence)
+
+    @property
+    def gc_low(self) -> bool:
+        return self.gc < self.gc_min
+
+    @property
+    def gc_high(self) -> bool:
+        return self.gc > self.gc_max
+
+    @property
+    def gc_in_band(self) -> bool:
+        """Band edges are **inclusive**: exactly 40% GC passes a 0.40 minimum.
+
+        Matching the insert-scale check, which also compares with ``<=``. The
+        edge is reachable in practice -- 12 G/C in a 30 nt guide is exactly
+        0.40 -- so which side of it passes is a real decision, not a rounding
+        detail.
+        """
+        return self.gc_min <= self.gc <= self.gc_max
+
+    @property
+    def longest_run(self) -> Run | None:
+        """The longest homopolymer run, earliest one first on a tie."""
+        return min(
+            self.runs, key=lambda r: (-r.length, r.start), default=None
+        )
+
+    @property
+    def flags(self) -> tuple[str, ...]:
+        """Why this guide is flagged; empty for a guide that passes.
+
+        ``gc_low`` and ``gc_high`` are separate rather than one
+        ``gc_out_of_band``, because the two have opposite remedies and a count
+        of each is what says whether a band is set wrong or a transcript is
+        simply GC-skewed.
+        """
+        flags = []
+        if self.gc_low:
+            flags.append("gc_low")
+        if self.gc_high:
+            flags.append("gc_high")
+        if self.runs:
+            flags.append("homopolymer")
+        return tuple(flags)
+
+    @property
+    def passes(self) -> bool:
+        return not self.flags
+
+
+def guide_homopolymer_runs(
+    sequence: str, min_length: int = DEFAULT_GUIDE_HOMOPOLYMER_MIN
+) -> list[Run]:
+    """Runs of >= ``min_length`` identical bases, named in the input alphabet.
+
+    A thin wrapper over `homopolymer_runs` over **all four** bases -- there is
+    no poly-T scan at guide scale to report T separately, so T is not excluded
+    the way it is for an insert.
+
+    The wrapper exists for the alphabet. `homopolymer_runs` normalises U to T
+    before scanning, which is right for finding the run but wrong for naming
+    it: a guide RNA's run of four U would come back as ``base='T'``, and
+    ``'T' * 4`` is not a sequence that appears anywhere in the guide. Here the
+    reported base is read back out of the input, so a UUUU run reports ``U``
+    and a GGGG run reports ``G``.
+
+    A run that is only identical *after* normalisation -- ``UUTT``, from a
+    sequence mixing the two alphabets -- is reported under the normalised base
+    ``T``, since no single input character describes it. Such sequences are a
+    known rough edge of this pipeline rather than a supported input; the span
+    is still correct, and the span is the actionable part.
+    """
+    original = sequence.upper()
+    runs = []
+    for run in homopolymer_runs(original, min_length, bases="ACGT"):
+        spelt = set(original[run.start - 1:run.end])
+        base = spelt.pop() if len(spelt) == 1 else run.base
+        runs.append(Run(base, run.start, run.end))
+    return runs
+
+
+def check_guide(
+    guide_id: str,
+    sequence: str,
+    gc_min: float = DEFAULT_GUIDE_GC_MIN,
+    gc_max: float = DEFAULT_GUIDE_GC_MAX,
+    homopolymer_min: int = DEFAULT_GUIDE_HOMOPOLYMER_MIN,
+) -> GuideQC:
+    """QC one guide: GC against a band, and homopolymer runs against a length.
+
+    Accepts either alphabet, since `gc_fraction` counts U with T. The sequence
+    is kept verbatim on the record apart from upper-casing, following the
+    ``target_seq`` convention in src/tile.py.
+
+    Bases outside ACGTU are excluded from the GC denominator and counted in
+    ``n_ambiguous`` rather than scored as not-GC, so an N-containing guide's GC
+    is the GC of its real bases. They are reported, not flagged: the count is
+    on the record for a caller that wants to reject on it, but an ambiguous
+    base is a property of the input FASTA rather than of the guide's chemistry.
+    """
+    gc, ambiguous = gc_fraction(sequence)
+    return GuideQC(
+        guide_id=guide_id,
+        sequence=sequence.upper(),
+        gc=gc,
+        n_ambiguous=ambiguous,
+        runs=tuple(guide_homopolymer_runs(sequence, homopolymer_min)),
+        gc_min=gc_min,
+        gc_max=gc_max,
+        homopolymer_min=homopolymer_min,
+    )

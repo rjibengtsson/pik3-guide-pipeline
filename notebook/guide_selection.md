@@ -201,8 +201,8 @@ coding, and the native stop codon at 685-687 would terminate translation before
 the reporter. The insert is therefore the CDS minus that terminal stop, 37-684 =
 648 nt = 216 codons, which is under 2,000 and already a multiple of 3. At 893 nt
 the transcript was never long enough for a 1,998 nt window anyway. Trimming the
-3'UTR also removed the 13 nt poly-T run at 877 and the low-entropy flag, both of
-which were in untranslated sequence.
+3'UTR also removed the 13 nt poly-T run at 877 and the low-complexity sequence
+around it, both of which were in untranslated sequence.
 
 These are **not** the hotspot-scan winners from the section above, and the column
 is deliberately not called "best window". The scan maximises hotspot count over
@@ -217,11 +217,75 @@ This table is the same set as `results/pik3/target_site_selection.tsv`, which is
 what [scripts/check_target_sites.py](scripts/check_target_sites.py) reads; the
 two must stay in step.
 
-## Checking for propertoes of selected regions for cloning
+## Checking for properties of selected regions for cloning
 
-Several properties of the selected regions were checked to ensure they are suitable for cloning. The following checks were performed:
+Run the QC after updating `target_site_selection.tsv`. The selection table
+contains both the PI3K transcripts and PPIB, so pass both FASTA directories:
 
-1. **GC Content**: The GC content of each selected region was calculated to ensure it falls within an optimal range for cloning and guide design.
-2. **Poly-T stretches**: scanned for long stretches of thymine (T) bases.
-3. ***Repeats and homopolymers**: scanned for the presence of repetitive sequences.
-4. **Reading frame and stop codons**: checked for the presence of stop codons and to ensure they are in-frame with the coding sequence of the gene.
+```bash
+conda activate pik3-guide
+python scripts/check_target_sites.py \
+    --selection results/pik3/target_site_selection.tsv \
+    --input-dir data/pik3-iso \
+    --input-dir data/ppib \
+    --output-dir results/pik3
+```
+
+The question here is whether **the selected insert as a whole** is suitable for
+cloning, so every measure is a property of the whole fragment or a feature with
+a position inside it. GC and entropy are therefore single numbers over the
+region, not scans at spacer width. A 30 nt window is a candidate guide, and
+whether a guide has workable GC is a question for guide selection, asked of the
+guides themselves — it says nothing about the insert being cloned, and a count
+of out-of-band windows is not a cloning criterion for any method.
+
+The script extracts each 1-based inclusive region from its transcript FASTA and
+checks that the declared length agrees with `end - start + 1`. It reports:
+
+- **GC content** of the whole insert, flagged if outside 30–70%. These defaults
+  are screening thresholds, not a universal cloning pass/fail range.
+- **Low-complexity sequence**: runs of at least four T bases, runs of at least
+  five A/C/G bases, tandem repeats of 2–4 nt motifs repeated at least three
+  times, each reported with its position; plus the insert's Shannon entropy,
+  flagged below 1.5 bits. The entropy number is coarse by construction — a
+  buried 30 nt homopolymer barely moves it — which is why the located repeat
+  scans, not entropy, are what find local low complexity.
+- **Stop codons**: counts and positions of TAA, TAG and TGA at every offset.
+  These are informational and frame-blind, so their presence is not a defect.
+  This is separate from the frame-aware check above, which confirms that the
+  selected coding inserts have no in-frame stop codons.
+
+The checked regions produced these summary values with the default thresholds:
+
+| gene | region | GC | entropy (bits) | poly-T runs | A/C/G homopolymers | tandem repeats | stop codons* |
+|---|---|---:|---:|---:|---:|---:|---:|
+| PIK3CA | 1002-2999 | 39.5% | 1.965 | 10 | 7 | 8 | 99 |
+| PIK3CB | 1001-2998 | 40.3% | 1.971 | 11 | 8 | 6 | 104 |
+| PIK3CD | 501-2498 | 62.4% | 1.954 | 2 | 6 | 5 | 44 |
+| PIK3CG | 1001-2998 | 48.5% | 1.993 | 6 | 6 | 4 | 69 |
+| PPIB | 37-684 | 54.2% | 1.983 | 2 | 2 | 4 | 19 |
+
+`*` Stop counts are frame-blind. **All five inserts sit inside the GC band and
+above the entropy threshold**, so the only flags raised are the located
+low-complexity features. Those flags identify features to inspect in context;
+they do not automatically disqualify a region. For example, poly-T is a
+premature-termination concern for a U6-driven construct, while these selected
+regions are coding inserts for a translational fusion.
+
+The run writes three files to `results/pik3/`:
+
+- `target_site_qc.tsv` contains one summary row per region: whole-insert GC,
+  entropy, feature counts, ambiguous-base count, flags and the threshold fields
+  used. There is no separate in-band column — `gc_frac` and `gc_band` are both
+  on the row, so the verdict is derivable, and `flags` states it.
+- `target_site_qc_features.tsv` lists each detected feature with its
+  1-based inclusive transcript coordinates and its offset within the selected
+  region, plus its severity. Use this file to locate and review individual
+  features. It holds only features that have a position — poly-T, homopolymers,
+  tandem repeats and stop codons; GC and entropy describe the whole insert and
+  live in the summary row alone.
+- `target_site_qc.md` is a readable report with the summary and per-region
+  details.
+
+All reported coordinates follow the same 1-based inclusive convention as
+`target_site_selection.tsv`.
